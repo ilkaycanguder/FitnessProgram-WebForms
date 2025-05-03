@@ -8,14 +8,63 @@ namespace PersonalizedWorkoutPlanner
 {
     public partial class Program : System.Web.UI.Page
     {
-        // Örnek sabit program önerileri
+        // Genişletilmiş program önerileri
         private Dictionary<string, List<string>> workoutPlans = new Dictionary<string, List<string>>()
-    {
-        { "Göğüs", new List<string> { "Bench Press", "Incline Dumbbell Press", "Push-up" } },
-        { "Bacak", new List<string> { "Squat", "Lunge", "Leg Press" } },
-        { "Sırt", new List<string> { "Deadlift", "Lat Pulldown", "Barbell Row" } },
-        { "Kardiyo", new List<string> { "Koşu Bandı", "Bisiklet", "İp Atlama" } }
-    };
+        {
+            { "Göğüs", new List<string> { 
+                "Bench Press", 
+                "Incline Dumbbell Press", 
+                "Push-up",
+                "Dumbbell Fly",
+                "Cable Crossover",
+                "Chest Dip"
+            }},
+            
+            { "Bacak", new List<string> { 
+                "Squat", 
+                "Lunge", 
+                "Leg Press",
+                "Leg Extension",
+                "Hamstring Curl",
+                "Calf Raise"
+            }},
+            
+            { "Sırt", new List<string> { 
+                "Deadlift", 
+                "Lat Pulldown", 
+                "Barbell Row",
+                "Pull-up",
+                "T-Bar Row",
+                "Face Pull"
+            }},
+            
+            { "Kardiyo", new List<string> { 
+                "Koşu Bandı", 
+                "Bisiklet", 
+                "İp Atlama",
+                "Eliptik Bisiklet",
+                "Kürek Çekme",
+                "Yüzme"
+            }},
+            
+            { "Kol", new List<string> { 
+                "Bicep Curl", 
+                "Tricep Extension", 
+                "Hammer Curl",
+                "Skull Crusher",
+                "Concentration Curl",
+                "Dips"
+            }},
+            
+            { "Omuz", new List<string> { 
+                "Shoulder Press", 
+                "Lateral Raise", 
+                "Front Raise",
+                "Reverse Fly",
+                "Face Pull",
+                "Upright Row"
+            }}
+        };
 
         protected void Page_Load(object sender, EventArgs e)
         {

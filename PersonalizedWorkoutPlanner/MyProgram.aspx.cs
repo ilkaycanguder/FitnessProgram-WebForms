@@ -27,6 +27,30 @@ namespace PersonalizedWorkoutPlanner
             if (!IsPostBack)
             {
                 LoadPrograms();
+                LoadStatistics();
+            }
+        }
+
+        private void LoadStatistics()
+        {
+            string conStr = ConfigurationManager.ConnectionStrings["FitnessDBConnectionString"].ConnectionString;
+            int userId = Convert.ToInt32(Session["UserId"]);
+
+            using (SqlConnection conn = new SqlConnection(conStr))
+            {
+                conn.Open();
+
+                string totalWorkoutsQuery = "SELECT COUNT(*) FROM Programs WHERE UserId = @UserId";
+                SqlCommand totalWorkoutsCmd = new SqlCommand(totalWorkoutsQuery, conn);
+                totalWorkoutsCmd.Parameters.AddWithValue("@UserId", userId);
+                int totalWorkouts = (int)totalWorkoutsCmd.ExecuteScalar();
+                litTotalWorkouts.Text = totalWorkouts.ToString();
+
+                string muscleGroupsQuery = "SELECT COUNT(DISTINCT MuscleGroup) FROM Programs WHERE UserId = @UserId";
+                SqlCommand muscleGroupsCmd = new SqlCommand(muscleGroupsQuery, conn);
+                muscleGroupsCmd.Parameters.AddWithValue("@UserId", userId);
+                int muscleGroups = (int)muscleGroupsCmd.ExecuteScalar();
+                litMuscleGroups.Text = muscleGroups.ToString();
             }
         }
 
@@ -92,6 +116,7 @@ namespace PersonalizedWorkoutPlanner
                 int programId = Convert.ToInt32(ViewState["ProgramToDelete"]);
                 DeleteProgram(programId);
                 LoadPrograms(ddlFilterMuscleGroup.SelectedValue, ddlSortByDate.SelectedValue);
+                LoadStatistics();
             }
         }
 
