@@ -6,7 +6,7 @@
 <configuration>
 
 	<connectionStrings>
-		<add name="FitnessDBConnectionString" connectionString="Data Source=YOUR_SERVER;Initial Catalog=FitnessDB;Integrated Security=True" providerName="System.Data.SqlClient" />
+		<add name="FitnessDBConnectionString" connectionString="Data Source=YOUR_SERVER;Initial Catalog=FitnessDB;Integrated Security=True;CharSet=utf8;Collation=Turkish_CI_AS" providerName="System.Data.SqlClient" />
 	</connectionStrings>
 
 	<system.web>
@@ -20,6 +20,7 @@
         <add assembly="Microsoft.AspNet.Web.Optimization.WebForms" namespace="Microsoft.AspNet.Web.Optimization.WebForms" tagPrefix="webopt" />
       </controls>
     </pages>
+    <globalization fileEncoding="utf-8" requestEncoding="utf-8" responseEncoding="utf-8" culture="tr-TR" uiCulture="tr-TR" />
   </system.web>
   <runtime>
     <assemblyBinding xmlns="urn:schemas-microsoft-com:asm.v1">

@@ -2,6 +2,7 @@ using System;
 using System.Configuration;
 using System.Data.SqlClient;
 using System.Web.UI;
+using System.Text;
 
 namespace PersonalizedWorkoutPlanner
 {
@@ -33,19 +34,21 @@ namespace PersonalizedWorkoutPlanner
                     string query = "SELECT Height, Weight, Goal FROM Users WHERE Id = @UserId";
                     SqlCommand cmd = new SqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@UserId", userId);
+                    cmd.CommandTimeout = 30;
 
                     conn.Open();
-                    SqlDataReader reader = cmd.ExecuteReader();
-
-                    if (reader.Read())
+                    using (SqlDataReader reader = cmd.ExecuteReader())
                     {
-                        txtHeight.Text = reader["Height"] != DBNull.Value ? reader["Height"].ToString() : string.Empty;
-                        txtWeight.Text = reader["Weight"] != DBNull.Value ? reader["Weight"].ToString() : string.Empty;
-                        
-                        string userGoal = reader["Goal"] != DBNull.Value ? reader["Goal"].ToString() : string.Empty;
-                        if (!string.IsNullOrEmpty(userGoal))
+                        if (reader.Read())
                         {
-                            ddlGoal.SelectedValue = userGoal;
+                            txtHeight.Text = reader["Height"] != DBNull.Value ? reader["Height"].ToString() : string.Empty;
+                            txtWeight.Text = reader["Weight"] != DBNull.Value ? reader["Weight"].ToString() : string.Empty;
+
+                            string userGoal = reader["Goal"] != DBNull.Value ? reader["Goal"].ToString() : string.Empty;
+                            if (!string.IsNullOrEmpty(userGoal))
+                            {
+                                ddlGoal.SelectedValue = userGoal;
+                            }
                         }
                     }
                 }
@@ -73,7 +76,8 @@ namespace PersonalizedWorkoutPlanner
                 {
                     string query = "UPDATE Users SET Height = @Height, Weight = @Weight, Goal = @Goal WHERE Id = @UserId";
                     SqlCommand cmd = new SqlCommand(query, conn);
-                    
+                    cmd.CommandTimeout = 30;
+
                     cmd.Parameters.AddWithValue("@UserId", userId);
                     cmd.Parameters.AddWithValue("@Height", string.IsNullOrEmpty(txtHeight.Text) ? (object)DBNull.Value : Convert.ToInt32(txtHeight.Text));
                     cmd.Parameters.AddWithValue("@Weight", string.IsNullOrEmpty(txtWeight.Text) ? (object)DBNull.Value : Convert.ToInt32(txtWeight.Text));
@@ -101,4 +105,4 @@ namespace PersonalizedWorkoutPlanner
             }
         }
     }
-} 
+}

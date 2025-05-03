@@ -194,12 +194,14 @@
                         </li>
                     </ul>
                     <div class="user-nav">
-                        <a class="profile-link" runat="server" href="~/Profile.aspx">
-                            <i class="fas fa-user-circle"></i> Profil
-                        </a>
-                        <asp:LinkButton CssClass="logout-link" runat="server" OnClick="LogOut">
-                            <i class="fas fa-sign-out-alt me-1"></i> Çıkış
-                        </asp:LinkButton>
+                        <% if (Session["UserId"] != null) { %>
+                            <a class="profile-link" runat="server" href="~/Profile.aspx">
+                                <i class="fas fa-user-circle"></i> Profil
+                            </a>
+                            <asp:LinkButton ID="btnLogout" CssClass="logout-link" runat="server" OnClick="LogOut">
+                                <i class="fas fa-sign-out-alt me-1"></i> Çıkış
+                            </asp:LinkButton>
+                        <% } %>
                     </div>
                 </div>
             </div>
@@ -216,5 +218,31 @@
     <asp:PlaceHolder runat="server">
         <%: Scripts.Render("~/Scripts/bootstrap.js") %>
     </asp:PlaceHolder>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var logoutBtn = document.getElementById('<%= btnLogout.ClientID %>');
+            if (logoutBtn) {
+                logoutBtn.onclick = function (e) {
+                    e.preventDefault();
+                    Swal.fire({
+                        title: 'Emin misiniz?',
+                        text: 'Çıkmak istediğinize emin misiniz?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Evet, çık!',
+                        cancelButtonText: 'Vazgeç'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            __doPostBack('<%= btnLogout.UniqueID %>', '');
+                        }
+                    });
+                    return false;
+                };
+            }
+        });
+    </script>
 </body>
 </html>

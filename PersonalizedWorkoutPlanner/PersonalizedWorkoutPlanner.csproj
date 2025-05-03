@@ -124,11 +124,14 @@
     <Content Include="Content\bootstrap.rtl.css" />
     <Content Include="Content\bootstrap.rtl.min.css" />
     <Content Include="Content\Site.css" />
+    <Content Include="Database\CreateDatabase.sql" />
     <Content Include="Default.aspx" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <Content Include="Login.aspx" />
+    <Content Include="Logout.aspx" />
     <Content Include="MyProgram.aspx" />
+    <Content Include="Profile.aspx" />
     <Content Include="Program.aspx" />
     <Content Include="Register.aspx" />
     <Content Include="Scripts\bootstrap.bundle.js" />
@@ -226,12 +229,26 @@
     <Compile Include="Login.aspx.designer.cs">
       <DependentUpon>Login.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Logout.aspx.cs">
+      <DependentUpon>Logout.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Logout.aspx.designer.cs">
+      <DependentUpon>Logout.aspx</DependentUpon>
+    </Compile>
     <Compile Include="MyProgram.aspx.cs">
       <DependentUpon>MyProgram.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="MyProgram.aspx.designer.cs">
       <DependentUpon>MyProgram.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Profile.aspx.cs">
+      <DependentUpon>Profile.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Profile.aspx.designer.cs">
+      <DependentUpon>Profile.aspx</DependentUpon>
     </Compile>
     <Compile Include="Program.aspx.cs">
       <DependentUpon>Program.aspx</DependentUpon>
@@ -277,6 +294,7 @@
     <None Include="packages.config" />
     <Content Include="Scripts\jquery-3.7.0.slim.min.map" />
     <Content Include="Scripts\jquery-3.7.0.min.map" />
+    <Content Include="Web.config.template" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

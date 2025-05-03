@@ -13,6 +13,7 @@ Bu proje, kullanıcıların kaydolarak kişisel fitness programları oluşturabi
 ## Veritabanı Yapısı
 
 ### Users Tablosu
+
 ```sql
 CREATE TABLE Users (
     Id INT PRIMARY KEY IDENTITY,
@@ -25,6 +26,7 @@ CREATE TABLE Users (
 ```
 
 ### Programs Tablosu
+
 ```sql
 CREATE TABLE Programs (
     Id INT PRIMARY KEY IDENTITY,
@@ -54,7 +56,7 @@ CREATE TABLE Programs (
 
 ## Kurulum
 
-1. SQL Server'da veritabanını oluşturun (App_Data/CreateDatabase.sql dosyasını kullanabilirsiniz)
+1. SQL Server'da veritabanını oluşturun (Database/CreateDatabase.sql dosyasını kullanabilirsiniz)
 2. Web.config dosyasında ConnectionString'i kendi veritabanı bağlantınıza göre güncelleyin
 3. Uygulamayı çalıştırın
 
@@ -73,5 +75,6 @@ Web.config'i doğru şekilde kullanmak için:
 ## Test Kullanıcısı
 
 Veritabanı oluşturulduğunda otomatik olarak aşağıdaki test kullanıcısı eklenir:
+
 - Kullanıcı adı: demo
 - Şifre: demo123

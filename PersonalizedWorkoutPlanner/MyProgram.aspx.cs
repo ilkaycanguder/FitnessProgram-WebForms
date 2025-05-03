@@ -81,14 +81,12 @@ namespace PersonalizedWorkoutPlanner
                 if (dt.Rows.Count > 0)
                 {
                     gvPrograms.DataSource = dt;
-                    gvPrograms.DataBind();
-                    lblEmpty.Visible = false;
                 }
                 else
                 {
-                    lblEmpty.Text = "Henüz kaydedilmiş program bulunmamaktadır.";
-                    lblEmpty.Visible = true;
+                    gvPrograms.DataSource = dt.Clone(); // Kolon yapısını korur, eski veriler tamamen temizlenir
                 }
+                gvPrograms.DataBind();
             }
         }
 
@@ -108,9 +106,9 @@ namespace PersonalizedWorkoutPlanner
             {
                 int programId = Convert.ToInt32(e.CommandArgument);
                 hdnProgramIdToDelete.Value = programId.ToString();
-                
+
                 // Show confirmation dialog using JavaScript
-                ClientScript.RegisterStartupScript(this.GetType(), "ShowDeleteDialog", 
+                ClientScript.RegisterStartupScript(this.GetType(), "ShowDeleteDialog",
                     "document.getElementById('deleteConfirmationDialog').style.display = 'block'; document.getElementById('dialogOverlay').style.display = 'block';", true);
             }
         }
@@ -123,7 +121,7 @@ namespace PersonalizedWorkoutPlanner
                 DeleteProgram(programId);
                 LoadPrograms(ddlFilterMuscleGroup.SelectedValue, ddlSortByDate.SelectedValue);
                 LoadStatistics();
-                
+
                 // Clear the hidden field
                 hdnProgramIdToDelete.Value = string.Empty;
             }
@@ -152,10 +150,10 @@ namespace PersonalizedWorkoutPlanner
             {
                 string conStr = ConfigurationManager.ConnectionStrings["FitnessDBConnectionString"].ConnectionString;
                 int userId = Convert.ToInt32(Session["UserId"]);
-                
+
                 // Verileri al
                 List<ProgramData> programList = new List<ProgramData>();
-                
+
                 using (SqlConnection conn = new SqlConnection(conStr))
                 {
                     string query = @"SELECT Id, MuscleGroup, WorkoutName, DateCreated 
@@ -184,7 +182,7 @@ namespace PersonalizedWorkoutPlanner
                         }
                     }
                 }
-                
+
                 // CSV dosyasını MemoryStream'e yaz
                 byte[] csvBytes;
                 using (MemoryStream ms = new MemoryStream())
@@ -193,19 +191,19 @@ namespace PersonalizedWorkoutPlanner
                     {
                         // CSV Header
                         sw.WriteLine("Kas Grubu,Egzersiz,Tarih");
-                        
+
                         // CSV Content
                         foreach (var program in programList)
                         {
                             sw.WriteLine($"{program.MuscleGroup},{program.WorkoutName},{program.DateCreated:dd.MM.yyyy HH:mm}");
                         }
-                        
+
                         sw.Flush();
                         ms.Position = 0;
                         csvBytes = ms.ToArray();
                     }
                 }
-                
+
                 // Response'u temizle ve gerekli headerleri ayarla
                 Response.Clear();
                 Response.ClearContent();
@@ -215,7 +213,7 @@ namespace PersonalizedWorkoutPlanner
                 Response.AddHeader("Content-Length", csvBytes.Length.ToString());
                 Response.ContentEncoding = Encoding.UTF8;
                 Response.Buffer = true;
-                
+
                 // CSV verilerini response stream'e yaz
                 Response.OutputStream.Write(csvBytes, 0, csvBytes.Length);
                 Response.End();
@@ -238,10 +236,10 @@ namespace PersonalizedWorkoutPlanner
             {
                 string conStr = ConfigurationManager.ConnectionStrings["FitnessDBConnectionString"].ConnectionString;
                 int userId = Convert.ToInt32(Session["UserId"]);
-                
+
                 // PDF'i oluşturmak için veritabanı sorgusunu yap
                 List<ProgramData> programList = new List<ProgramData>();
-                
+
                 using (SqlConnection conn = new SqlConnection(conStr))
                 {
                     string query = @"SELECT Id, MuscleGroup, WorkoutName, DateCreated 
@@ -270,33 +268,33 @@ namespace PersonalizedWorkoutPlanner
                         }
                     }
                 }
-                
+
                 // Memory stream'e PDF oluştur
                 byte[] pdfBytes;
                 using (MemoryStream ms = new MemoryStream())
                 {
                     Document document = new Document(PageSize.A4, 10f, 10f, 10f, 10f);
                     PdfWriter writer = PdfWriter.GetInstance(document, ms);
-                    
+
                     document.Open();
-                    
+
                     // Basit font kullanımı
                     Font titleFont = new Font(Font.FontFamily.HELVETICA, 16, Font.BOLD);
                     Font headerFont = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD);
                     Font contentFont = new Font(Font.FontFamily.HELVETICA, 10);
-                    
+
                     // Başlık ekle
                     Paragraph title = new Paragraph("Antrenman Programlarım", titleFont);
                     title.Alignment = Element.ALIGN_CENTER;
                     title.SpacingAfter = 20f;
                     document.Add(title);
-                    
+
                     // Alt başlık olarak tarih ve filtre bilgisi ekle
                     Paragraph subtitle = new Paragraph($"Oluşturulma Tarihi: {DateTime.Now:dd.MM.yyyy HH:mm}", contentFont);
                     subtitle.Alignment = Element.ALIGN_RIGHT;
                     subtitle.SpacingAfter = 20f;
                     document.Add(subtitle);
-                    
+
                     if (!string.IsNullOrEmpty(ddlFilterMuscleGroup.SelectedValue))
                     {
                         Paragraph filterInfo = new Paragraph($"Filtre: {ddlFilterMuscleGroup.SelectedItem.Text}", contentFont);
@@ -304,35 +302,35 @@ namespace PersonalizedWorkoutPlanner
                         filterInfo.SpacingAfter = 20f;
                         document.Add(filterInfo);
                     }
-                    
+
                     // Tablo oluştur
                     PdfPTable table = new PdfPTable(3);
                     table.WidthPercentage = 100;
                     table.SetWidths(new float[] { 2f, 4f, 2f });
-                    
+
                     // Tablo başlıkları
                     PdfPCell headerCell1 = new PdfPCell(new Phrase("Kas Grubu", headerFont));
                     headerCell1.BackgroundColor = new BaseColor(240, 244, 248);
                     headerCell1.HorizontalAlignment = Element.ALIGN_CENTER;
                     headerCell1.VerticalAlignment = Element.ALIGN_MIDDLE;
                     headerCell1.Padding = 8;
-                    
+
                     PdfPCell headerCell2 = new PdfPCell(new Phrase("Egzersiz", headerFont));
                     headerCell2.BackgroundColor = new BaseColor(240, 244, 248);
                     headerCell2.HorizontalAlignment = Element.ALIGN_CENTER;
                     headerCell2.VerticalAlignment = Element.ALIGN_MIDDLE;
                     headerCell2.Padding = 8;
-                    
+
                     PdfPCell headerCell3 = new PdfPCell(new Phrase("Tarih", headerFont));
                     headerCell3.BackgroundColor = new BaseColor(240, 244, 248);
                     headerCell3.HorizontalAlignment = Element.ALIGN_CENTER;
                     headerCell3.VerticalAlignment = Element.ALIGN_MIDDLE;
                     headerCell3.Padding = 8;
-                    
+
                     table.AddCell(headerCell1);
                     table.AddCell(headerCell2);
                     table.AddCell(headerCell3);
-                    
+
                     // Tablo içeriği
                     bool alternate = false;
                     foreach (var program in programList)
@@ -340,27 +338,27 @@ namespace PersonalizedWorkoutPlanner
                         PdfPCell cell1 = new PdfPCell(new Phrase(program.MuscleGroup, contentFont));
                         PdfPCell cell2 = new PdfPCell(new Phrase(program.WorkoutName, contentFont));
                         PdfPCell cell3 = new PdfPCell(new Phrase(program.DateCreated.ToString("dd.MM.yyyy HH:mm"), contentFont));
-                        
+
                         if (alternate)
                         {
                             cell1.BackgroundColor = new BaseColor(248, 250, 253);
                             cell2.BackgroundColor = new BaseColor(248, 250, 253);
                             cell3.BackgroundColor = new BaseColor(248, 250, 253);
                         }
-                        
+
                         cell1.Padding = 8;
                         cell2.Padding = 8;
                         cell3.Padding = 8;
-                        
+
                         table.AddCell(cell1);
                         table.AddCell(cell2);
                         table.AddCell(cell3);
-                        
+
                         alternate = !alternate;
                     }
-                    
+
                     document.Add(table);
-                    
+
                     // Eğer liste boş ise bilgi mesajı ekle
                     if (programList.Count == 0)
                     {
@@ -369,14 +367,14 @@ namespace PersonalizedWorkoutPlanner
                         emptyInfo.SpacingBefore = 20f;
                         document.Add(emptyInfo);
                     }
-                    
+
                     document.Close();
                     writer.Close();
-                    
+
                     // PDF verilerini byte array olarak al
                     pdfBytes = ms.ToArray();
                 }
-                
+
                 // Response'u temizle ve gerekli headerleri ayarla
                 Response.Clear();
                 Response.ClearContent();
@@ -385,7 +383,7 @@ namespace PersonalizedWorkoutPlanner
                 Response.AddHeader("Content-Disposition", "attachment; filename=Programlarim.pdf");
                 Response.AddHeader("Content-Length", pdfBytes.Length.ToString());
                 Response.Buffer = true;
-                
+
                 // PDF verilerini response stream'e yaz
                 Response.OutputStream.Write(pdfBytes, 0, pdfBytes.Length);
                 Response.End();

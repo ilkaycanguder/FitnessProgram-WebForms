@@ -46,4 +46,10 @@ GO
 
 -- Veritabanı oluşturuldu
 PRINT 'FitnessDB veritabanı ve tabloları başarıyla oluşturuldu.';
+GO
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE Name = N'Days' AND Object_ID = Object_ID(N'Programs'))
+BEGIN
+    ALTER TABLE Programs ADD Days NVARCHAR(50) NULL;
+END
 GO 
