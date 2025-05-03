@@ -361,3 +361,8 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# ASP.NET Web Forms configuration files
+PersonalizedWorkoutPlanner/Web.config
+PersonalizedWorkoutPlanner/Web.Debug.config
+PersonalizedWorkoutPlanner/Web.Release.config

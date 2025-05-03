@@ -58,6 +58,18 @@ CREATE TABLE Programs (
 2. Web.config dosyasında ConnectionString'i kendi veritabanı bağlantınıza göre güncelleyin
 3. Uygulamayı çalıştırın
 
+## Takım Geliştirme için Web.config Yapılandırması
+
+Bu projede Web.config dosyası Git versiyon kontrolünden çıkarılmıştır, böylece her geliştiricinin kendi bağlantı ayarlarını kullanması sağlanır.
+
+Web.config'i doğru şekilde kullanmak için:
+
+1. Web.config.template dosyasını Web.config olarak kopyalayın
+2. Web.config dosyasında ConnectionString'i kendi veritabanı bilgilerinizle güncelleyin
+3. Web.config dosyası .gitignore listesinde olduğu için yaptığınız değişiklikler diğer geliştiricileri etkilemeyecektir
+
+**Önemli**: Yeni bir yapılandırma değişikliği yapmanız gerektiğinde, bu değişikliği Web.config.template dosyasına da eklemeyi unutmayın, böylece takımdaki diğer kişilerin güncel yapılandırmaları almaları sağlanır.
+
 ## Test Kullanıcısı
 
 Veritabanı oluşturulduğunda otomatik olarak aşağıdaki test kullanıcısı eklenir:
