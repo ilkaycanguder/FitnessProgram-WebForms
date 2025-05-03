@@ -35,12 +35,15 @@ Inherits="PersonalizedWorkoutPlanner.Login" %>
       
       .login-image {
         width: 50%;
-        background: url('https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=1170&auto=format&fit=crop') center/cover no-repeat;
+        background-image: url('https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=1170&auto=format&fit=crop');
+        background-position: center;
+        background-size: cover;
+        background-repeat: no-repeat;
         position: relative;
+        padding: 3rem;
         display: flex;
-        flex-direction: column;
-        justify-content: flex-end;
-        padding: 2rem;
+        align-items: center;
+        justify-content: center;
         color: white;
       }
       

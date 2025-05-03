@@ -135,20 +135,20 @@ Inherits="PersonalizedWorkoutPlanner.MyProgram" %>
       
       .programs-container {
         background: white;
-        padding: 3rem;
+        padding: 2.5rem;
         width: 70%;
         overflow-y: auto;
       }
       
       .programs-header {
-        margin-bottom: 2.5rem;
+        margin-bottom: 2rem;
         position: relative;
       }
       
       .programs-header h2 {
         color: #1e3c72;
         font-weight: 700;
-        font-size: 2rem;
+        font-size: 1.8rem;
         margin-bottom: 0.8rem;
         position: relative;
         display: inline-block;
@@ -198,30 +198,54 @@ Inherits="PersonalizedWorkoutPlanner.MyProgram" %>
         font-size: 0.95rem;
       }
       
-      .form-control {
+      .custom-select {
+        background-color: white;
+        border: 2px solid #e1e8f3;
         border-radius: 10px;
         padding: 0.8rem 1rem;
-        border: 1px solid #e1e5eb;
-        font-size: 1rem;
+        font-weight: 500;
+        color: #555;
         transition: all 0.3s ease;
-        box-shadow: none;
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.02);
       }
       
-      .form-control:focus {
+      .custom-select:focus {
         border-color: #1e3c72;
-        box-shadow: 0 0 0 0.25rem rgba(30, 60, 114, 0.15);
+        box-shadow: 0 0 0 0.2rem rgba(30, 60, 114, 0.15);
       }
       
-      .export-options {
+      .export-buttons {
         display: flex;
-        gap: 0.8rem;
+        gap: 1rem;
+      }
+      
+      .btn-export {
+        flex: 1;
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        color: white;
+        border: none;
+        padding: 0.8rem 1rem;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        box-shadow: 0 4px 10px rgba(30, 60, 114, 0.2);
+      }
+      
+      .btn-export:hover {
+        background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);
+        transform: translateY(-3px);
+        box-shadow: 0 6px 15px rgba(30, 60, 114, 0.3);
       }
       
       .grid-container {
-        margin-top: 2rem;
+        background: white;
         border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
         overflow: hidden;
-        box-shadow: 0 5px 25px rgba(0, 0, 0, 0.05);
         border: 1px solid #eaeef3;
       }
       
@@ -232,19 +256,24 @@ Inherits="PersonalizedWorkoutPlanner.MyProgram" %>
       }
       
       .grid-view th {
-        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-        color: white;
-        padding: 1.2rem 1.5rem;
+        background: linear-gradient(to right, #f0f4f8, #f8f9fa);
+        color: #1e3c72;
         font-weight: 600;
+        padding: 1.2rem 1rem;
         text-align: left;
+        border-bottom: 2px solid #e1e8f3;
         font-size: 1rem;
       }
       
       .grid-view td {
-        padding: 1.2rem 1.5rem;
+        padding: 1.2rem 1rem;
         border-bottom: 1px solid #eaeef3;
-        font-size: 1rem;
+        color: #444;
         vertical-align: middle;
+      }
+      
+      .grid-view tr:nth-child(even) {
+        background-color: #f8fafd;
       }
       
       .grid-view tr:last-child td {
@@ -252,7 +281,7 @@ Inherits="PersonalizedWorkoutPlanner.MyProgram" %>
       }
       
       .grid-view tr:hover {
-        background: #f8fafd;
+        background: #f0f6ff;
       }
       
       .empty-message {
@@ -300,8 +329,8 @@ Inherits="PersonalizedWorkoutPlanner.MyProgram" %>
       }
       
       .btn-action {
-        padding: 0.5rem 1rem;
-        border-radius: 8px;
+        padding: 0.7rem 1rem;
+        border-radius: 10px;
         font-size: 0.9rem;
         transition: all 0.3s ease;
         display: inline-flex;
@@ -325,18 +354,6 @@ Inherits="PersonalizedWorkoutPlanner.MyProgram" %>
         color: white;
         transform: translateY(-2px);
         box-shadow: 0 5px 10px rgba(220, 53, 69, 0.2);
-      }
-      
-      .btn-export {
-        background: linear-gradient(135deg, #28a745 0%, #1f8737 100%);
-        color: white;
-      }
-      
-      .btn-export:hover {
-        background: linear-gradient(135deg, #1f8737 0%, #186429 100%);
-        color: white;
-        transform: translateY(-2px);
-        box-shadow: 0 5px 10px rgba(40, 167, 69, 0.2);
       }
       
       .confirmation-dialog {
@@ -447,7 +464,7 @@ Inherits="PersonalizedWorkoutPlanner.MyProgram" %>
         
         .grid-view td, 
         .grid-view th {
-          padding: 1rem;
+          padding: 1rem 0.8rem;
         }
       }
       
@@ -507,7 +524,7 @@ Inherits="PersonalizedWorkoutPlanner.MyProgram" %>
                 <asp:DropDownList
                   ID="ddlFilterMuscleGroup"
                   runat="server"
-                  CssClass="form-control"
+                  CssClass="form-control custom-select"
                   AutoPostBack="true"
                   OnSelectedIndexChanged="ddlFilterMuscleGroup_SelectedIndexChanged"
                 >
@@ -515,6 +532,9 @@ Inherits="PersonalizedWorkoutPlanner.MyProgram" %>
                   <asp:ListItem Text="Göğüs" Value="Göğüs" />
                   <asp:ListItem Text="Bacak" Value="Bacak" />
                   <asp:ListItem Text="Sırt" Value="Sırt" />
+                  <asp:ListItem Text="Omuz" Value="Omuz" />
+                  <asp:ListItem Text="Kol" Value="Kol" />
+                  <asp:ListItem Text="Karın" Value="Karın" />
                   <asp:ListItem Text="Kardiyo" Value="Kardiyo" />
                 </asp:DropDownList>
               </div>
@@ -523,7 +543,7 @@ Inherits="PersonalizedWorkoutPlanner.MyProgram" %>
                 <asp:DropDownList
                   ID="ddlSortByDate"
                   runat="server"
-                  CssClass="form-control"
+                  CssClass="form-control custom-select"
                   AutoPostBack="true"
                   OnSelectedIndexChanged="ddlSortByDate_SelectedIndexChanged"
                 >
@@ -533,19 +553,19 @@ Inherits="PersonalizedWorkoutPlanner.MyProgram" %>
               </div>
               <div class="filter-group">
                 <label class="form-label">Dışa Aktar</label>
-                <div class="export-options">
+                <div class="export-buttons">
                   <asp:Button
                     ID="btnExportCSV"
                     runat="server"
-                    Text="CSV"
-                    CssClass="btn btn-action btn-export"
+                    Text="CSV İndir"
+                    CssClass="btn btn-export"
                     OnClick="btnExportCSV_Click"
                   />
                   <asp:Button
                     ID="btnExportPDF"
                     runat="server"
-                    Text="PDF"
-                    CssClass="btn btn-action btn-export"
+                    Text="PDF İndir"
+                    CssClass="btn btn-export"
                     OnClick="btnExportPDF_Click"
                   />
                 </div>
@@ -589,7 +609,6 @@ Inherits="PersonalizedWorkoutPlanner.MyProgram" %>
                         CssClass="btn btn-action btn-delete"
                         CommandName="DeleteProgram"
                         CommandArgument='<%# Eval("Id") %>'
-                        OnClientClick="return confirmDelete();"
                       >
                         <i class="fas fa-trash"></i> Sil
                       </asp:LinkButton>
@@ -631,20 +650,15 @@ Inherits="PersonalizedWorkoutPlanner.MyProgram" %>
         </div>
       </div>
       <div id="dialogOverlay" class="dialog-overlay"></div>
+      
+      <!-- Hidden field to store program ID to delete -->
+      <asp:HiddenField ID="hdnProgramIdToDelete" runat="server" />
     </form>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script type="text/javascript">
-      function confirmDelete() {
-        document.getElementById("deleteConfirmationDialog").style.display =
-          "block";
-        document.getElementById("dialogOverlay").style.display = "block";
-        return false;
-      }
-
       function hideDeleteDialog() {
-        document.getElementById("deleteConfirmationDialog").style.display =
-          "none";
+        document.getElementById("deleteConfirmationDialog").style.display = "none";
         document.getElementById("dialogOverlay").style.display = "none";
       }
     </script>

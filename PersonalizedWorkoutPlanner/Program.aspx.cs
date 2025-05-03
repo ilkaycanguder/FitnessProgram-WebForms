@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Configuration;
-
+using System.Web.UI.WebControls;
 
 namespace PersonalizedWorkoutPlanner
 {
@@ -90,35 +90,168 @@ namespace PersonalizedWorkoutPlanner
 
         protected void btnSave_Click(object sender, EventArgs e)
         {
-            if (lstWorkouts.SelectedIndex == -1)
+            try
             {
-                lblMessage.Text = "Lütfen en az bir antrenman seçin.";
-                return;
-            }
-
-            int userId = Convert.ToInt32(Session["UserId"]);
-            string muscleGroup = ddlMuscleGroup.SelectedValue;
-            string conStr = ConfigurationManager.ConnectionStrings["FitnessDBConnectionString"].ConnectionString;
-
-            using (SqlConnection conn = new SqlConnection(conStr))
-            {
-                conn.Open();
-
-                foreach (var item in lstWorkouts.GetSelectedIndices())
+                // Kas grubu seçilmiş mi kontrol et
+                if (string.IsNullOrEmpty(ddlMuscleGroup.SelectedValue))
                 {
-                    string workoutName = lstWorkouts.Items[item].Text;
-
-                    string query = "INSERT INTO Programs (UserId, MuscleGroup, WorkoutName) VALUES (@UserId, @MuscleGroup, @WorkoutName)";
-                    SqlCommand cmd = new SqlCommand(query, conn);
-                    cmd.Parameters.AddWithValue("@UserId", userId);
-                    cmd.Parameters.AddWithValue("@MuscleGroup", muscleGroup);
-                    cmd.Parameters.AddWithValue("@WorkoutName", workoutName);
-
-                    cmd.ExecuteNonQuery();
+                    lblMessage.Text = "Lütfen önce bir kas grubu seçiniz.";
+                    lblMessage.CssClass = "alert alert-warning mt-3";
+                    return;
                 }
 
-                lblMessage.Text = "Program başarıyla kaydedildi!";
+                // Seçili egzersizleri al - client tarafında seçim yapıldıysa hidden field'dan al
+                string hiddenWorkouts = Request.Form["selectedWorkoutsHidden"];
+                List<WorkoutSelection> selectedWorkouts = new List<WorkoutSelection>();
+            
+                if (!string.IsNullOrEmpty(hiddenWorkouts))
+                {
+                    try
+                    {
+                        // Elimizde JSON formatında veri var: [{"muscleGroup":"Göğüs","workoutName":"Bench Press"},...]
+                        // Manuel JSON parsing yerine daha güvenilir yöntem kullanalım
+                        
+                        // String'i temizle
+                        string json = hiddenWorkouts.Trim();
+                        
+                        // Basit çözümleme - köşeli parantezleri kaldır
+                        if (json.StartsWith("[") && json.EndsWith("]"))
+                        {
+                            json = json.Substring(1, json.Length - 2);
+                            
+                            // Her bir öğeyi ayır: {"muscleGroup":"Göğüs","workoutName":"Bench Press"}
+                            string[] items = json.Split(new string[] { "},{" }, StringSplitOptions.None);
+                            
+                            foreach (string item in items)
+                            {
+                                // Süslü parantezleri ve tırnak işaretlerini temizle
+                                string cleanItem = item
+                                    .Replace("{", "")
+                                    .Replace("}", "")
+                                    .Replace("\"muscleGroup\":\"", "muscleGroup:")
+                                    .Replace("\",\"workoutName\":\"", ",workoutName:")
+                                    .Replace("\"", "");
+                                
+                                // Bileşenleri ayır
+                                string[] pairs = cleanItem.Split(',');
+                                
+                                if (pairs.Length >= 2)
+                                {
+                                    string muscleGroup = pairs[0].Replace("muscleGroup:", "").Trim();
+                                    string workoutName = pairs[1].Replace("workoutName:", "").Trim();
+                                    
+                                    if (!string.IsNullOrEmpty(muscleGroup) && !string.IsNullOrEmpty(workoutName))
+                                    {
+                                        selectedWorkouts.Add(new WorkoutSelection
+                                        {
+                                            MuscleGroup = muscleGroup,
+                                            WorkoutName = workoutName
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        lblMessage.Text = "Egzersiz seçimlerini işlerken hata oluştu: " + ex.Message;
+                        lblMessage.CssClass = "alert alert-danger mt-3";
+                        return;
+                    }
+                }
+                else
+                {
+                    // Fallback olarak server-side seçimleri kontrol et
+                    if (lstWorkouts.GetSelectedIndices().Length == 0)
+                    {
+                        lblMessage.Text = "Lütfen en az bir egzersiz seçiniz.";
+                        lblMessage.CssClass = "alert alert-warning mt-3";
+                        return;
+                    }
+                    
+                    // Server tarafı seçimleri al
+                    foreach (int index in lstWorkouts.GetSelectedIndices())
+                    {
+                        selectedWorkouts.Add(new WorkoutSelection
+                        {
+                            MuscleGroup = ddlMuscleGroup.SelectedValue,
+                            WorkoutName = lstWorkouts.Items[index].Text
+                        });
+                    }
+                }
+                
+                // En az bir hareket seçilmiş mi kontrol et
+                if (selectedWorkouts.Count == 0)
+                {
+                    lblMessage.Text = "Lütfen en az bir egzersiz seçiniz.";
+                    lblMessage.CssClass = "alert alert-warning mt-3";
+                    return;
+                }
+
+                // Kullanıcı kimliğini al
+                int userId = GetCurrentUserId();
+                if (userId <= 0)
+                {
+                    Response.Redirect("Login.aspx");
+                    return;
+                }
+
+                // Veritabanı bağlantısı oluştur
+                string connectionString = ConfigurationManager.ConnectionStrings["FitnessDBConnectionString"].ConnectionString;
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                {
+                    conn.Open();
+
+                    // Seçilen hareketleri programla ilişkilendir - her biri kendi kas grubuyla kaydedilir
+                    foreach (var workout in selectedWorkouts)
+                    {
+                        if (string.IsNullOrEmpty(workout.WorkoutName))
+                            continue; // Boş egzersiz adlarını atla
+                            
+                        string insertWorkoutSql = @"
+                            INSERT INTO Programs (UserId, MuscleGroup, WorkoutName)
+                            VALUES (@UserId, @MuscleGroup, @WorkoutName)
+                        ";
+
+                        using (SqlCommand cmd = new SqlCommand(insertWorkoutSql, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@UserId", userId);
+                            cmd.Parameters.AddWithValue("@MuscleGroup", workout.MuscleGroup);
+                            cmd.Parameters.AddWithValue("@WorkoutName", workout.WorkoutName);
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+
+                    // Başarılı mesajı göster
+                    lblMessage.Text = "Programınız başarıyla kaydedildi!";
+                    lblMessage.CssClass = "success-message";
+                }
             }
+            catch (Exception ex)
+            {
+                // Hata mesajı göster
+                lblMessage.Text = "Hata: " + ex.Message;
+                lblMessage.CssClass = "alert alert-danger mt-3";
+            }
+        }
+
+        /// <summary>
+        /// Oturum açmış kullanıcının ID'sini alır
+        /// </summary>
+        private int GetCurrentUserId()
+        {
+            if (Session["UserId"] != null)
+            {
+                return Convert.ToInt32(Session["UserId"]);
+            }
+            return -1;
+        }
+
+        // WorkoutSelection sınıfı ekle - egzersiz adı ve kas grubunu birlikte saklar
+        public class WorkoutSelection
+        {
+            public string MuscleGroup { get; set; }
+            public string WorkoutName { get; set; }
         }
     }
 }

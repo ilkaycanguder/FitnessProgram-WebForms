@@ -136,6 +136,11 @@ Inherits="PersonalizedWorkoutPlanner.Register" %>
         display: block;
       }
       
+      .input-wrapper {
+        position: relative;
+        width: 100%;
+      }
+      
       .input-icon {
         position: absolute;
         top: 50%;
@@ -144,6 +149,12 @@ Inherits="PersonalizedWorkoutPlanner.Register" %>
         color: #1e3c72;
         font-size: 1.2rem;
         z-index: 10;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 20px;
+        text-align: center;
+        pointer-events: none;
       }
       
       .form-control {
@@ -291,15 +302,17 @@ Inherits="PersonalizedWorkoutPlanner.Register" %>
           <div class="register-form">
             <div class="form-group">
               <label class="form-label">Kullanıcı Adı</label>
-              <div class="input-icon">
-                <i class="fas fa-user"></i>
+              <div class="input-wrapper">
+                <asp:TextBox
+                  ID="txtUsername"
+                  runat="server"
+                  CssClass="form-control"
+                  Placeholder="Kullanıcı adınızı girin"
+                />
+                <div class="input-icon">
+                  <i class="fas fa-user"></i>
+                </div>
               </div>
-              <asp:TextBox
-                ID="txtUsername"
-                runat="server"
-                CssClass="form-control"
-                Placeholder="Kullanıcı adınızı girin"
-              />
               <asp:RequiredFieldValidator
                 ID="rfvUsername"
                 runat="server"
@@ -312,16 +325,18 @@ Inherits="PersonalizedWorkoutPlanner.Register" %>
 
             <div class="form-group">
               <label class="form-label">Şifre</label>
-              <div class="input-icon">
-                <i class="fas fa-lock"></i>
+              <div class="input-wrapper">
+                <asp:TextBox
+                  ID="txtPassword"
+                  runat="server"
+                  TextMode="Password"
+                  CssClass="form-control"
+                  Placeholder="Şifrenizi girin"
+                />
+                <div class="input-icon">
+                  <i class="fas fa-lock"></i>
+                </div>
               </div>
-              <asp:TextBox
-                ID="txtPassword"
-                runat="server"
-                TextMode="Password"
-                CssClass="form-control"
-                Placeholder="Şifrenizi girin"
-              />
               <asp:RequiredFieldValidator
                 ID="rfvPassword"
                 runat="server"
@@ -335,15 +350,17 @@ Inherits="PersonalizedWorkoutPlanner.Register" %>
             <div class="form-row">
               <div class="form-group">
                 <label class="form-label">Boy (cm)</label>
-                <div class="input-icon">
-                  <i class="fas fa-ruler-vertical"></i>
+                <div class="input-wrapper">
+                  <asp:TextBox
+                    ID="txtHeight"
+                    runat="server"
+                    CssClass="form-control"
+                    Placeholder="Boyunuzu girin"
+                  />
+                  <div class="input-icon">
+                    <i class="fas fa-ruler-vertical"></i>
+                  </div>
                 </div>
-                <asp:TextBox
-                  ID="txtHeight"
-                  runat="server"
-                  CssClass="form-control"
-                  Placeholder="Boyunuzu girin"
-                />
                 <asp:RequiredFieldValidator
                   ID="rfvHeight"
                   runat="server"
@@ -356,15 +373,17 @@ Inherits="PersonalizedWorkoutPlanner.Register" %>
 
               <div class="form-group">
                 <label class="form-label">Kilo (kg)</label>
-                <div class="input-icon">
-                  <i class="fas fa-weight"></i>
+                <div class="input-wrapper">
+                  <asp:TextBox
+                    ID="txtWeight"
+                    runat="server"
+                    CssClass="form-control"
+                    Placeholder="Kilonuzu girin"
+                  />
+                  <div class="input-icon">
+                    <i class="fas fa-weight"></i>
+                  </div>
                 </div>
-                <asp:TextBox
-                  ID="txtWeight"
-                  runat="server"
-                  CssClass="form-control"
-                  Placeholder="Kilonuzu girin"
-                />
                 <asp:RequiredFieldValidator
                   ID="rfvWeight"
                   runat="server"
@@ -378,15 +397,17 @@ Inherits="PersonalizedWorkoutPlanner.Register" %>
 
             <div class="form-group">
               <label class="form-label">Fitness Hedefi</label>
-              <div class="input-icon">
-                <i class="fas fa-bullseye"></i>
+              <div class="input-wrapper">
+                <asp:DropDownList ID="ddlGoal" runat="server" CssClass="form-select">
+                  <asp:ListItem Text="-- Hedef Seçin --" Value="" />
+                  <asp:ListItem Text="Kas Yap" Value="Kas Yap" />
+                  <asp:ListItem Text="Kilo Ver" Value="Kilo Ver" />
+                  <asp:ListItem Text="Fit Kal" Value="Fit Kal" />
+                </asp:DropDownList>
+                <div class="input-icon">
+                  <i class="fas fa-bullseye"></i>
+                </div>
               </div>
-              <asp:DropDownList ID="ddlGoal" runat="server" CssClass="form-select">
-                <asp:ListItem Text="-- Hedef Seçin --" Value="" />
-                <asp:ListItem Text="Kas Yap" Value="Kas Yap" />
-                <asp:ListItem Text="Kilo Ver" Value="Kilo Ver" />
-                <asp:ListItem Text="Fit Kal" Value="Fit Kal" />
-              </asp:DropDownList>
               <asp:RequiredFieldValidator
                 ID="rfvGoal"
                 runat="server"

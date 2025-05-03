@@ -9,11 +9,8 @@
 
 namespace PersonalizedWorkoutPlanner
 {
-
-
     public partial class Logout
     {
-
         /// <summary>
         /// form1 control.
         /// </summary>
