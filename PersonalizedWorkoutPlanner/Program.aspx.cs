@@ -9,6 +9,15 @@ namespace PersonalizedWorkoutPlanner
 {
     public partial class Program : System.Web.UI.Page
     {
+        // CheckBox kontrolleri
+        protected System.Web.UI.WebControls.CheckBox chkPazartesi;
+        protected System.Web.UI.WebControls.CheckBox chkSali;
+        protected System.Web.UI.WebControls.CheckBox chkCarsamba;
+        protected System.Web.UI.WebControls.CheckBox chkPersembe;
+        protected System.Web.UI.WebControls.CheckBox chkCuma;
+        protected System.Web.UI.WebControls.CheckBox chkCumartesi;
+        protected System.Web.UI.WebControls.CheckBox chkPazar;
+
         // Genişletilmiş program önerileri
         private Dictionary<string, List<string>> workoutPlans = new Dictionary<string, List<string>>()
         {
@@ -198,16 +207,16 @@ namespace PersonalizedWorkoutPlanner
                 }
 
                 // Seçilen günleri topla
-                string selectedDays = string.Join(",",
-                    chkPazartesi.Checked ? "Pazartesi" : null,
-                    chkSali.Checked ? "Salı" : null,
-                    chkCarsamba.Checked ? "Çarşamba" : null,
-                    chkPersembe.Checked ? "Perşembe" : null,
-                    chkCuma.Checked ? "Cuma" : null,
-                    chkCumartesi.Checked ? "Cumartesi" : null,
-                    chkPazar.Checked ? "Pazar" : null
-                );
-                selectedDays = string.Join(",", selectedDays.Split(',').Where(x => !string.IsNullOrEmpty(x)));
+                List<string> selectedDays = new List<string>();
+                if (chkPazartesi.Checked) selectedDays.Add("Pazartesi");
+                if (chkSali.Checked) selectedDays.Add("Salı");
+                if (chkCarsamba.Checked) selectedDays.Add("Çarşamba");
+                if (chkPersembe.Checked) selectedDays.Add("Perşembe");
+                if (chkCuma.Checked) selectedDays.Add("Cuma");
+                if (chkCumartesi.Checked) selectedDays.Add("Cumartesi");
+                if (chkPazar.Checked) selectedDays.Add("Pazar");
+
+                string daysString = string.Join(",", selectedDays);
 
                 // Veritabanı bağlantısı oluştur
                 string connectionString = ConfigurationManager.ConnectionStrings["FitnessDBConnectionString"].ConnectionString;
@@ -231,7 +240,7 @@ namespace PersonalizedWorkoutPlanner
                             cmd.Parameters.AddWithValue("@UserId", userId);
                             cmd.Parameters.AddWithValue("@MuscleGroup", workout.MuscleGroup);
                             cmd.Parameters.AddWithValue("@WorkoutName", workout.WorkoutName);
-                            cmd.Parameters.AddWithValue("@Days", selectedDays);
+                            cmd.Parameters.AddWithValue("@Days", daysString);
                             cmd.ExecuteNonQuery();
                         }
                     }

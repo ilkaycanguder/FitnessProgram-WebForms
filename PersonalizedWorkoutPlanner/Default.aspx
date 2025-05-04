@@ -194,10 +194,15 @@
                 <h1 class="hero-title">Kişiselleştirilmiş Egzersiz Planlayıcı</h1>
                 <p class="hero-subtitle">Fitness hedeflerinize ulaşmak için profesyonel olarak tasarlanmış, kişiselleştirilmiş antrenman programları oluşturun ve sağlıklı bir yaşam için ilk adımı atın.</p>
                 
-                <div class="hero-buttons">
+                <asp:Panel ID="pnlNotLoggedIn" runat="server" CssClass="hero-buttons">
                     <a href="Register.aspx" class="btn btn-hero btn-primary">Hemen Başla</a>
                     <a href="Login.aspx" class="btn btn-hero btn-outline-primary">Giriş Yap</a>
-                </div>
+                </asp:Panel>
+
+                <asp:Panel ID="pnlLoggedIn" runat="server" CssClass="hero-buttons" Visible="false">
+                    <a href="Program.aspx" class="btn btn-hero btn-primary">Program Oluştur</a>
+                    <a href="MyProgram.aspx" class="btn btn-hero btn-outline-primary">Programlarım</a>
+                </asp:Panel>
             </div>
         </section>
 
