@@ -13,6 +13,8 @@ using iTextSharp.text;
 using iTextSharp.text.pdf;
 using System.Web.UI.HtmlControls;
 using System.Threading;
+using System.Web.Services;
+using System.Web.Script.Services;
 
 namespace PersonalizedWorkoutPlanner
 {
@@ -20,15 +22,116 @@ namespace PersonalizedWorkoutPlanner
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (Session["UserId"] == null)
-            {
-                Response.Redirect("Login.aspx");
-            }
-
             if (!IsPostBack)
             {
+                if (Session["UserId"] == null)
+                {
+                    Response.Redirect("Login.aspx");
+                    return;
+                }
+
                 LoadPrograms();
-                LoadStatistics();
+            }
+        }
+
+        private void LoadPrograms()
+        {
+            int userId = Convert.ToInt32(Session["UserId"]);
+            string connectionString = ConfigurationManager.ConnectionStrings["FitnessDBConnectionString"].ConnectionString;
+
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                string sql = @"
+                    SELECT Id, MuscleGroup, WorkoutName, Days, DateCreated as CreatedDate
+                    FROM Programs
+                    WHERE UserId = @UserId
+                    ORDER BY DateCreated DESC";
+
+                using (SqlCommand cmd = new SqlCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@UserId", userId);
+                    conn.Open();
+
+                    using (SqlDataAdapter adapter = new SqlDataAdapter(cmd))
+                    {
+                        DataTable dt = new DataTable();
+                        adapter.Fill(dt);
+
+                        if (dt.Rows.Count == 0)
+                        {
+                            pnlNoProgram.Visible = true;
+                            pnlPrograms.Visible = false;
+                            return;
+                        }
+
+                        pnlNoProgram.Visible = false;
+                        pnlPrograms.Visible = true;
+
+                        // Her gün için programları filtrele
+                        var pazartesiPrograms = dt.AsEnumerable()
+                            .Where(r => r.Field<string>("Days") != null && r.Field<string>("Days").Contains("Pazartesi"))
+                            .ToList();
+                        if (pazartesiPrograms.Any())
+                        {
+                            rptPazartesi.DataSource = pazartesiPrograms;
+                            rptPazartesi.DataBind();
+                        }
+
+                        var saliPrograms = dt.AsEnumerable()
+                            .Where(r => r.Field<string>("Days") != null && r.Field<string>("Days").Contains("Salı"))
+                            .ToList();
+                        if (saliPrograms.Any())
+                        {
+                            rptSali.DataSource = saliPrograms;
+                            rptSali.DataBind();
+                        }
+
+                        var carsambaPrograms = dt.AsEnumerable()
+                            .Where(r => r.Field<string>("Days") != null && r.Field<string>("Days").Contains("Çarşamba"))
+                            .ToList();
+                        if (carsambaPrograms.Any())
+                        {
+                            rptCarsamba.DataSource = carsambaPrograms;
+                            rptCarsamba.DataBind();
+                        }
+
+                        var persembePrograms = dt.AsEnumerable()
+                            .Where(r => r.Field<string>("Days") != null && r.Field<string>("Days").Contains("Perşembe"))
+                            .ToList();
+                        if (persembePrograms.Any())
+                        {
+                            rptPersembe.DataSource = persembePrograms;
+                            rptPersembe.DataBind();
+                        }
+
+                        var cumaPrograms = dt.AsEnumerable()
+                            .Where(r => r.Field<string>("Days") != null && r.Field<string>("Days").Contains("Cuma"))
+                            .ToList();
+                        if (cumaPrograms.Any())
+                        {
+                            rptCuma.DataSource = cumaPrograms;
+                            rptCuma.DataBind();
+                        }
+
+                        var cumartesiPrograms = dt.AsEnumerable()
+                            .Where(r => r.Field<string>("Days") != null && r.Field<string>("Days").Contains("Cumartesi"))
+                            .ToList();
+                        if (cumartesiPrograms.Any())
+                        {
+                            rptCumartesi.DataSource = cumartesiPrograms;
+                            rptCumartesi.DataBind();
+                        }
+
+                        var pazarPrograms = dt.AsEnumerable()
+                            .Where(r => r.Field<string>("Days") != null && r.Field<string>("Days").Contains("Pazar"))
+                            .ToList();
+                        if (pazarPrograms.Any())
+                        {
+                            rptPazar.DataSource = pazarPrograms;
+                            rptPazar.DataBind();
+                        }
+                    }
+                }
             }
         }
 
@@ -55,49 +158,14 @@ namespace PersonalizedWorkoutPlanner
             }
         }
 
-        private void LoadPrograms(string muscleGroup = "", string sortOrder = "DESC")
-        {
-            string conStr = ConfigurationManager.ConnectionStrings["FitnessDBConnectionString"].ConnectionString;
-            int userId = Convert.ToInt32(Session["UserId"]);
-
-            using (SqlConnection conn = new SqlConnection(conStr))
-            {
-                string query = @"SELECT Id, MuscleGroup, WorkoutName, DateCreated 
-                               FROM Programs 
-                               WHERE UserId = @UserId 
-                               AND (@MuscleGroup = '' OR MuscleGroup = @MuscleGroup)
-                               AND WorkoutName IS NOT NULL
-                               ORDER BY DateCreated " + (sortOrder == "DESC" ? "DESC" : "ASC");
-
-                SqlCommand cmd = new SqlCommand(query, conn);
-                cmd.Parameters.AddWithValue("@UserId", userId);
-                cmd.Parameters.AddWithValue("@MuscleGroup", muscleGroup);
-
-                conn.Open();
-                SqlDataAdapter da = new SqlDataAdapter(cmd);
-                DataTable dt = new DataTable();
-                da.Fill(dt);
-
-                if (dt.Rows.Count > 0)
-                {
-                    gvPrograms.DataSource = dt;
-                }
-                else
-                {
-                    gvPrograms.DataSource = dt.Clone(); // Kolon yapısını korur, eski veriler tamamen temizlenir
-                }
-                gvPrograms.DataBind();
-            }
-        }
-
         protected void ddlFilterMuscleGroup_SelectedIndexChanged(object sender, EventArgs e)
         {
-            LoadPrograms(ddlFilterMuscleGroup.SelectedValue, ddlSortByDate.SelectedValue);
+            LoadPrograms();
         }
 
         protected void ddlSortByDate_SelectedIndexChanged(object sender, EventArgs e)
         {
-            LoadPrograms(ddlFilterMuscleGroup.SelectedValue, ddlSortByDate.SelectedValue);
+            LoadPrograms();
         }
 
         protected void gvPrograms_RowCommand(object sender, GridViewCommandEventArgs e)
@@ -119,7 +187,7 @@ namespace PersonalizedWorkoutPlanner
             {
                 int programId = Convert.ToInt32(hdnProgramIdToDelete.Value);
                 DeleteProgram(programId);
-                LoadPrograms(ddlFilterMuscleGroup.SelectedValue, ddlSortByDate.SelectedValue);
+                LoadPrograms();
                 LoadStatistics();
 
                 // Clear the hidden field
@@ -397,6 +465,40 @@ namespace PersonalizedWorkoutPlanner
                 // Hata durumunda kullanıcıya bildirme
                 string errorScript = $"alert('PDF oluşturulurken bir hata oluştu: {ex.Message.Replace("'", "\\'")}');";
                 ScriptManager.RegisterStartupScript(this, this.GetType(), "PdfError", errorScript, true);
+            }
+        }
+
+        protected void ProgramSil_ItemCommand(object source, RepeaterCommandEventArgs e)
+        {
+            if (e.CommandName == "Sil")
+            {
+                int programId = Convert.ToInt32(e.CommandArgument);
+                DeleteProgram(programId);
+                LoadPrograms();
+            }
+        }
+
+        [System.Web.Services.WebMethod(EnableSession = true)]
+        [System.Web.Script.Services.ScriptMethod]
+        public static bool UpdateProgramDay(int id, string newDay)
+        {
+            // Kullanıcı oturumu kontrolü
+            if (System.Web.HttpContext.Current.Session["UserId"] == null)
+                return false;
+            int userId = Convert.ToInt32(System.Web.HttpContext.Current.Session["UserId"]);
+            string connectionString = System.Configuration.ConfigurationManager.ConnectionStrings["FitnessDBConnectionString"].ConnectionString;
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                string sql = "UPDATE Programs SET Days = @Days WHERE Id = @Id AND UserId = @UserId";
+                using (SqlCommand cmd = new SqlCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@Days", newDay);
+                    cmd.Parameters.AddWithValue("@Id", id);
+                    cmd.Parameters.AddWithValue("@UserId", userId);
+                    conn.Open();
+                    int result = cmd.ExecuteNonQuery();
+                    return result > 0;
+                }
             }
         }
     }

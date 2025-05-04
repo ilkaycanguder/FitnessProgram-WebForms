@@ -16,6 +16,7 @@
     <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
         .modern-navbar {
@@ -143,6 +144,94 @@
                 width: 100%;
             }
         }
+        .theme-toggle-btn {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background: #222;
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 1.3rem;
+            cursor: pointer;
+            z-index: 1000;
+        }
+        body.dark {
+            background: #181a1b;
+            color: #e0e0e0;
+        }
+        body.dark .modern-navbar {
+            background: #111 !important;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+        body.dark .navbar-brand,
+        body.dark .navbar-nav .nav-link,
+        body.dark .profile-link,
+        body.dark .logout-link {
+            color: #fff !important;
+            background: transparent !important;
+        }
+        body.dark .navbar-nav .nav-link.active {
+            background: rgba(255,255,255,0.08) !important;
+            color: #fff !important;
+        }
+        body.dark .navbar-toggler {
+            background: #222 !important;
+            color: #fff !important;
+        }
+        body.dark .container, body.dark .program-card, body.dark .day-section {
+            background: #23272b !important;
+            color: #e0e0e0 !important;
+        }
+        body.dark .feature-card, body.dark .card, body.dark .card-footer {
+            background: #23272b !important;
+            color: #e0e0e0 !important;
+            border-color: #222 !important;
+        }
+        body.dark .card-title, body.dark .section-title {
+            color: #fff !important;
+        }
+        body.dark .btn-card, body.dark .btn-hero, body.dark .btn-primary, body.dark .btn-outline-primary {
+            background: #222 !important;
+            color: #fff !important;
+            border-color: #fff !important;
+        }
+        body.dark .btn-card:hover, body.dark .btn-hero:hover, body.dark .btn-primary:hover, body.dark .btn-outline-primary:hover {
+            background: #333 !important;
+            color: #fff !important;
+        }
+        body.dark .hero-section {
+            background: #181a1b !important;
+            color: #fff !important;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        body.dark .hero-section .btn-hero,
+        body.dark .hero-section .btn-primary {
+            background: #222 !important;
+            color: #fff !important;
+            border: 1px solid #fff !important;
+        }
+        body.dark .hero-section .btn-outline-primary {
+            background: transparent !important;
+            color: #fff !important;
+            border: 2px solid #fff !important;
+        }
+        body.dark .feature-card,
+        body.dark .card,
+        body.dark .card-footer {
+            background: #23272b !important;
+            color: #e0e0e0 !important;
+            border-color: #222 !important;
+        }
+        body.dark .card-title, body.dark .section-title {
+            color: #fff !important;
+        }
+        .theme-icon-sun {
+            color: #FFD600 !important;
+            text-shadow: 0 0 6px #FFD60055;
+        }
     </style>
 </head>
 <body>
@@ -165,6 +254,10 @@
                 <%--Site Scripts--%>
             </Scripts>
         </asp:ScriptManager>
+
+        <button id="theme-toggle" class="theme-toggle-btn" onclick="toggleTheme()" type="button">
+            <i id="theme-icon" class="fas fa-moon"></i>
+        </button>
 
         <nav class="navbar navbar-expand-lg modern-navbar">
             <div class="container">
@@ -243,6 +336,25 @@
                 };
             }
         });
+        function updateThemeIcon() {
+            var icon = document.getElementById('theme-icon');
+            if (document.body.classList.contains('dark')) {
+                icon.className = 'fas fa-sun theme-icon-sun';
+            } else {
+                icon.className = 'fas fa-moon';
+            }
+        }
+        function toggleTheme() {
+            document.body.classList.toggle('dark');
+            localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+            updateThemeIcon();
+        }
+        window.onload = function() {
+            if (localStorage.getItem('theme') === 'dark') {
+                document.body.classList.add('dark');
+            }
+            updateThemeIcon();
+        }
     </script>
 </body>
 </html>

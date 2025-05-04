@@ -186,6 +186,33 @@
                 margin: 0 auto;
             }
         }
+        body {
+            background: #f8f9fa;
+            color: #222;
+            transition: background 0.3s, color 0.3s;
+        }
+        .theme-toggle-btn {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background: #222;
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 1.3rem;
+            cursor: pointer;
+            z-index: 1000;
+        }
+        body.dark {
+            background: #181a1b;
+            color: #e0e0e0;
+        }
+        body.dark .container, body.dark .program-card, body.dark .day-section {
+            background: #23272b !important;
+            color: #e0e0e0 !important;
+        }
     </style>
 
     <main>
@@ -257,5 +284,20 @@
             </div>
         </div>
     </main>
+
+    <!-- Tema toggle butonu -->
+    <button id="theme-toggle" class="theme-toggle-btn" onclick="toggleTheme()">🌙</button>
+
+    <script>
+      function toggleTheme() {
+        document.body.classList.toggle('dark');
+        localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+      }
+      window.onload = function() {
+        if (localStorage.getItem('theme') === 'dark') {
+          document.body.classList.add('dark');
+        }
+      }
+    </script>
 
 </asp:Content>
