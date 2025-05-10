@@ -668,66 +668,42 @@ Inherits="PersonalizedWorkoutPlanner.Program" EnableEventValidation="false" %>
         <div class="form-group">
           <label class="form-label">Kas Grubu Seçin</label>
           <div class="muscle-group-cards">
-            <div
-              class="muscle-card"
-              data-value="Göğüs"
-              onclick="selectMuscleGroup(this, 'Göğüs')"
-            >
+            <div class="muscle-card" data-value="Göğüs">
               <img
                 src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?q=80&w=1170&auto=format&fit=crop"
                 alt="Göğüs Antrenmanı"
               />
               <h5>Göğüs</h5>
             </div>
-            <div
-              class="muscle-card"
-              data-value="Bacak"
-              onclick="selectMuscleGroup(this, 'Bacak')"
-            >
+            <div class="muscle-card" data-value="Bacak">
               <img
                 src="https://images.unsplash.com/photo-1574680178050-55c6a6a96e0a?q=80&w=1169&auto=format&fit=crop"
                 alt="Bacak Antrenmanı"
               />
               <h5>Bacak</h5>
             </div>
-            <div
-              class="muscle-card"
-              data-value="Sırt"
-              onclick="selectMuscleGroup(this, 'Sırt')"
-            >
+            <div class="muscle-card" data-value="Sırt">
               <img
                 src="https://images.unsplash.com/photo-1599058917765-a780eda07a3e?q=80&w=1169&auto=format&fit=crop"
                 alt="Sırt Antrenmanı"
               />
               <h5>Sırt</h5>
             </div>
-            <div
-              class="muscle-card"
-              data-value="Kardiyo"
-              onclick="selectMuscleGroup(this, 'Kardiyo')"
-            >
+            <div class="muscle-card" data-value="Kardiyo">
               <img
                 src="https://cdn.pixabay.com/photo/2014/11/11/15/24/gym-526995_1280.jpg"
                 alt="Kardiyo Antrenmanı"
               />
               <h5>Kardiyo</h5>
             </div>
-            <div
-              class="muscle-card"
-              data-value="Kol"
-              onclick="selectMuscleGroup(this, 'Kol')"
-            >
+            <div class="muscle-card" data-value="Kol">
               <img
                 src="https://cdn.pixabay.com/photo/2015/07/02/10/22/training-828726_1280.jpg"
                 alt="Kol Antrenmanı"
               />
               <h5>Kol</h5>
             </div>
-            <div
-              class="muscle-card"
-              data-value="Omuz"
-              onclick="selectMuscleGroup(this, 'Omuz')"
-            >
+            <div class="muscle-card" data-value="Omuz">
               <img
                 src="https://cdn.pixabay.com/photo/2014/11/17/13/17/crossfit-534615_1280.jpg"
                 alt="Omuz Antrenmanı"
@@ -848,568 +824,468 @@ Inherits="PersonalizedWorkoutPlanner.Program" EnableEventValidation="false" %>
     </form>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-      // Store all workout data by muscle group
-      const workoutsByMuscleGroup = {
-        Göğüs: [
-          "Bench Press",
-          "Incline Dumbbell Press",
-          "Push-up",
-          "Dumbbell Fly",
-          "Cable Crossover",
-          "Chest Dip",
-        ],
-        Bacak: [
-          "Squat",
-          "Lunge",
-          "Leg Press",
-          "Leg Extension",
-          "Hamstring Curl",
-          "Calf Raise",
-        ],
-        Sırt: [
-          "Deadlift",
-          "Lat Pulldown",
-          "Barbell Row",
-          "Pull-up",
-          "T-Bar Row",
-        ],
-        Kardiyo: [
-          "Koşu Bandı",
-          "Bisiklet",
-          "İp Atlama",
-          "Eliptik Bisiklet",
-          "Kürek Çekme",
-          "Yüzme",
-        ],
-        Kol: [
-          "Bicep Curl",
-          "Tricep Extension",
-          "Hammer Curl",
-          "Skull Crusher",
-          "Concentration Curl",
-          "Dips",
-        ],
-        Omuz: [
-          "Shoulder Press",
-          "Lateral Raise",
-          "Front Raise",
-          "Reverse Fly",
-          "Face Pull",
-          "Upright Row",
-        ],
-      };
+    <script type="text/javascript">
+      // Server'dan gelen JSON verisini al
+      let workoutsByMuscleGroup = {};
+      try {
+        const jsonData = <%= WorkoutPlansJson %>;
+        workoutsByMuscleGroup = jsonData;
+        console.log('JSON parse başarılı:', workoutsByMuscleGroup);
+      } catch (e) {
+        console.error('JSON parse hatası:', e);
+        workoutsByMuscleGroup = {
+          "Göğüs": ["Bench Press", "Incline Dumbbell Press", "Push-up", "Dumbbell Fly", "Cable Crossover", "Chest Dip"],
+          "Bacak": ["Squat", "Lunge", "Leg Press", "Leg Extension", "Hamstring Curl", "Calf Raise"],
+          "Sırt": ["Deadlift", "Lat Pulldown", "Barbell Row", "Pull-up", "T-Bar Row"],
+          "Kardiyo": ["HIIT", "Burpee"],
+          "Kol": ["Preacher Curl"],
+          "Omuz": ["Shoulder Press", "Reverse Fly", "Face Pull", "Upright Row", "Arnold Press"]
+        };
+      }
 
-      // Egzersiz kartları için veriler
+      // Egzersiz detayları
       const workoutDetails = {
         "Bench Press": {
-          image:
-            "https://cdn.pixabay.com/photo/2016/03/27/07/08/man-1282232_1280.jpg",
-          description: "Göğüs kaslarını geliştirmek için temel egzersiz",
-          difficulty: 3,
+          image: "https://uk.gymshark.com/_next/image?url=https%3A%2F%2Fimages.ctfassets.net%2F8urtyqugdt2l%2F2bMyO0jZaRJjfRptw60iwG%2F17c391156dd01ae6920c672cc2744fb1%2Fdesktop-bench-press.jpg&w=3840&q=85",
+          description: "Göğüs kaslarını çalıştıran temel bir egzersiz. Barbell veya dumbbell ile yapılabilir.",
+          difficulty: 3
         },
         "Incline Dumbbell Press": {
-          image:
-            "https://cdn.pixabay.com/photo/2016/03/27/23/00/weight-lifting-1284616_1280.jpg",
-          description: "Üst göğüs kaslarını hedefleyen egzersiz",
-          difficulty: 2,
+          image: "https://www.dmoose.com/cdn/shop/articles/1_8c4ca767-1b7d-4981-9c20-c7d0b744dca5.jpg?v=1648733684",
+          description: "Üst göğüs kaslarını hedefleyen bir egzersiz. Eğimli bir bench üzerinde yapılır.",
+          difficulty: 3
         },
         "Push-up": {
-          image:
-            "https://images.unsplash.com/photo-1566241142559-40e1dab266c6?q=80&w=1170&auto=format&fit=crop",
-          description:
-            "Vücut ağırlığı ile göğüs, omuz ve triceps kaslarını çalıştırır",
-          difficulty: 1,
+          image: "https://www.fitnesseducation.edu.au/wp-content/uploads/2020/10/Pushups.jpg",
+          description: "Vücut ağırlığı ile yapılan, göğüs, omuz ve triceps kaslarını çalıştıran temel bir egzersiz.",
+          difficulty: 2
         },
         "Dumbbell Fly": {
-          image:
-            "https://cdn.pixabay.com/photo/2013/03/09/14/38/gym-91849_1280.jpg",
-          description: "Göğüs kaslarını yana doğru açarak geliştirir",
-          difficulty: 2,
+          image: "https://swolverine.com/cdn/shop/articles/Dumbbell_Chest_Fly_825bd98f-7e67-4b98-ba86-3db39e835290_600x600_crop_center.jpg?v=1739510458",
+          description: "Göğüs kaslarının dış kısmını hedefleyen izole bir egzersiz.",
+          difficulty: 2
         },
         "Cable Crossover": {
-          image:
-            "https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?q=80&w=1169&auto=format&fit=crop",
-          description:
-            "Kablo makinesi ile göğüs kaslarını içe doğru sıkarak çalıştırır",
-          difficulty: 2,
+          image: "https://www.macfit.com/wp-content/uploads/2024/11/cable-crossover-egzersizi-nasil-yapilir.jpg",
+          description: "Göğüs kaslarının iç kısmını çalıştıran, kablolu bir makinede yapılan egzersiz.",
+          difficulty: 2
         },
         "Chest Dip": {
-          image:
-            "https://images.unsplash.com/photo-1598266663439-2056e6900339?q=80&w=1169&auto=format&fit=crop",
-          description:
-            "Paralel barda dip hareketi ile alt göğüs kaslarını çalıştırır",
-          difficulty: 3,
+          image: "https://cdn.muscleandstrength.com/sites/default/files/chest-dip.jpg",
+          description: "Göğüs ve triceps kaslarını çalıştıran, paralel bar üzerinde yapılan bir egzersiz.",
+          difficulty: 3
         },
-        Squat: {
-          image:
-            "https://images.unsplash.com/photo-1567598508481-65985588e295?q=80&w=987&auto=format&fit=crop",
-          description: "Bacak kaslarını geliştirmek için temel egzersiz",
-          difficulty: 3,
+        "Squat": {
+          image: "https://www.fizyodemi.com/wp-content/uploads/2024/07/squat-kinetik-ve-kinematigi-egzersiz-performansinda-kullanilisi-1556610860.jpg",
+          description: "Bacak kaslarını çalıştıran temel bir egzersiz. Barbell veya vücut ağırlığı ile yapılabilir.",
+          difficulty: 4
         },
-        Lunge: {
-          image:
-            "https://images.unsplash.com/photo-1434682881908-b43d0467b798?q=80&w=1174&auto=format&fit=crop",
-          description:
-            "Bacak ve kalça kaslarını dengeli bir şekilde çalıştırır",
-          difficulty: 2,
+        "Lunge": {
+          image: "https://hips.hearstapps.com/hmg-prod/images/walking-lunge-6401e3ab937d2.jpg",
+          description: "Bacak kaslarını dengeli bir şekilde çalıştıran, tek bacak üzerinde yapılan bir egzersiz.",
+          difficulty: 2
         },
         "Leg Press": {
-          image:
-            "https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?q=80&w=2069&auto=format&fit=crop",
-          description:
-            "Quadriceps ve hamstring kaslarını hedefleyen makine egzersizi",
-          difficulty: 2,
+          image: "https://image.hurimg.com/i/hurriyet/75/0x0/61543cfc4e3fe11708b330fd.jpg",
+          description: "Bacak kaslarını çalıştıran, makinede yapılan bir egzersiz.",
+          difficulty: 3
         },
         "Leg Extension": {
-          image:
-            "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1170&auto=format&fit=crop",
-          description: "Quadriceps (ön bacak) kaslarını izole eder",
-          difficulty: 1,
+          image: "https://149874912.v2.pressablecdn.com/wp-content/uploads/2024/08/leg-press-vs-leg-extension-for-quads.jpg",
+          description: "Quadriceps kaslarını izole olarak çalıştıran bir makine egzersizi.",
+          difficulty: 2
         },
         "Hamstring Curl": {
-          image:
-            "https://images.unsplash.com/photo-1574680096145-d05b474e2155?q=80&w=2069&auto=format&fit=crop",
-          description: "Hamstring (arka bacak) kaslarını izole eder",
-          difficulty: 1,
+          image: "https://ik.imagekit.io/02fmeo4exvw/exercise-library/large/153-2.jpg",
+          description: "Hamstring kaslarını izole olarak çalıştıran bir makine egzersizi.",
+          difficulty: 2
         },
         "Calf Raise": {
-          image:
-            "https://images.unsplash.com/photo-1600618528240-fb9fc964b853?q=80&w=1170&auto=format&fit=crop",
-          description: "Baldır kaslarını hedefleyen egzersiz",
-          difficulty: 1,
+          image: "https://i.ytimg.com/vi/-M4-G8p8fmc/maxresdefault.jpg",
+          description: "Baldır kaslarını çalıştıran temel bir egzersiz.",
+          difficulty: 1
         },
-        Deadlift: {
-          image:
-            "https://images.unsplash.com/photo-1599058917765-a780eda07a3e?q=80&w=1169&auto=format&fit=crop",
-          description:
-            "Sırt, kalça ve bacak kaslarını birlikte çalıştıran temel egzersiz",
-          difficulty: 3,
+        "Deadlift": {
+          image: "https://hips.hearstapps.com/hmg-prod/images/deadlift-1651142430.jpg?crop=1.00xw:0.845xh;0,0.0510xh&resize=980:*",
+          description: "Sırt, bacak ve core kaslarını çalıştıran kompleks bir egzersiz.",
+          difficulty: 4
         },
         "Lat Pulldown": {
-          image:
-            "https://images.unsplash.com/photo-1596357395217-80de13130e92?q=80&w=2071&auto=format&fit=crop",
-          description:
-            "Sırt kaslarını, özellikle latissimus dorsi kasını hedefler",
-          difficulty: 2,
+          image: "https://i0.wp.com/www.muscleandfitness.com/wp-content/uploads/2020/01/widegrippulldown2.jpg?quality=86&strip=all",
+          description: "Sırt kaslarını çalıştıran, kablolu bir makinede yapılan egzersiz.",
+          difficulty: 2
         },
         "Barbell Row": {
-          image:
-            "https://images.unsplash.com/photo-1616803689943-5601631c7fec?q=80&w=1170&auto=format&fit=crop",
-          description: "Üst sırt kaslarını güçlendiren temel egzersiz",
-          difficulty: 3,
+          image: "https://images.ctfassets.net/8urtyqugdt2l/3MfxpieTD4IprS0zIktKZl/c94589eb28081d5ed3086e21cd5faeb7/desktop-barbell-row.jpg",
+          description: "Sırt kaslarını çalıştıran, barbell ile yapılan bir egzersiz.",
+          difficulty: 3
         },
         "Pull-up": {
-          image:
-            "https://cdn.pixabay.com/photo/2017/04/22/10/15/sport-2250970_1280.jpg",
-          description:
-            "Sırt kaslarını vücut ağırlığı ile çalıştıran etkili egzersiz",
-          difficulty: 3,
+          image: "https://shreddedbrothers.com/uploads/blogs/ckeditor/files/pull-up-2.jpg",
+          description: "Sırt ve biceps kaslarını çalıştıran, vücut ağırlığı ile yapılan bir egzersiz.",
+          difficulty: 4
         },
         "T-Bar Row": {
-          image:
-            "https://images.unsplash.com/photo-1598266663439-2056e6900339?q=80&w=1169&auto=format&fit=crop",
-          description: "Orta sırt kaslarını hedefleyen bir egzersiz",
-          difficulty: 2,
+          image: "https://cdn.muscleandstrength.com/sites/default/files/t-bar-row.jpg",
+          description: "Sırt kaslarını çalıştıran, özel bir makinede yapılan egzersiz.",
+          difficulty: 3
+        },
+        "HIIT": {
+          image: "https://contents.mediadecathlon.com/p2437875/k$f4e65c9aa5a1d0bce0ebfee95cefb5a3/1920x0/2677pt2830/5354xcr5354/default.jpg?format=auto",
+          description: "Yüksek yoğunluklu interval antrenmanı. Kalp sağlığı ve yağ yakımı için etkili.",
+          difficulty: 4
+        },
+        "Burpee": {
+          image: "https://d15r0pauj874pp.cloudfront.net/files/8m3mx4kmb-BURPEE.jpg",
+          description: "Tüm vücudu çalıştıran, kardiyovasküler bir egzersiz.",
+          difficulty: 3
+        },
+        "Preacher Curl": {
+          image: "https://www.fitnessandbeast.com/wp-content/uploads/2016/02/Preacher-curl.jpg",
+          description: "Biceps kaslarını izole olarak çalıştıran bir egzersiz.",
+          difficulty: 2
         },
         "Shoulder Press": {
-          image:
-            "https://images.unsplash.com/photo-1532029837206-abbe2b7620e3?q=80&w=1170&auto=format&fit=crop",
-          description: "Omuz kaslarını geliştiren temel egzersiz",
-          difficulty: 2,
+          image: "https://sporium.net/wp-content/uploads/2019/10/omuz-dumbell-press.jpg",
+          description: "Omuz kaslarını çalıştıran temel bir egzersiz.",
+          difficulty: 3
         },
         "Reverse Fly": {
-          image:
-            "https://images.unsplash.com/photo-1601422407692-ec4eeec1d9b3?q=80&w=1025&auto=format&fit=crop",
-          description: "Arka deltoid kasını ve üst sırtı hedefleyen egzersiz",
-          difficulty: 1,
+          image: "https://cdn.muscleandstrength.com/sites/default/files/machine-reverse-fly.jpg",
+          description: "Omuz arka kaslarını çalıştıran bir egzersiz.",
+          difficulty: 2
         },
         "Face Pull": {
-          image:
-            "https://images.unsplash.com/photo-1605296867424-35fc25c9212a?q=80&w=1170&auto=format&fit=crop",
-          description: "Arka omuz kaslarını ve üst sırtı çalıştıran egzersiz",
-          difficulty: 1,
+          image: "https://imagely.mirafit.co.uk/wp/wp-content/uploads/2024/12/Half-Kneeling-Face-Pull-Using-Mirafit-Cable-Pulley-Machine-1024x683.jpg",
+          description: "Omuz arka kaslarını ve rotator cuff'ı çalıştıran bir egzersiz.",
+          difficulty: 2
         },
         "Upright Row": {
-          image:
-            "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?q=80&w=1170&auto=format&fit=crop",
-          description: "Omuz ve trapez kaslarını çalıştıran egzersiz",
-          difficulty: 2,
+          image: "https://static.nike.com/a/images/f_auto/dpr_3.0,cs_srgb/h_500,c_limit/ac1ccf6e-a321-4b78-8136-90da1c322086/try-these-upright-row-variations-experts-say.jpg",
+          description: "Omuz ve trapez kaslarını çalıştıran bir egzersiz.",
+          difficulty: 2
         },
-        "Koşu Bandı": {
-          image:
-            "https://images.unsplash.com/photo-1580086319619-3ed498161c77?q=80&w=2069&auto=format&fit=crop",
-          description:
-            "Kalp-damar sistemini geliştiren temel kardiyovasküler egzersiz",
-          difficulty: 2,
-        },
-        Bisiklet: {
-          image:
-            "https://cdn.pixabay.com/photo/2014/09/28/19/49/fitness-465203_1280.jpg",
-          description:
-            "Bacak kaslarını geliştirirken kalp-damar sistemini de çalıştırır",
-          difficulty: 1,
-        },
-        "İp Atlama": {
-          image:
-            "https://images.unsplash.com/photo-1486739985386-d4fae04ca6f7?q=80&w=1072&auto=format&fit=crop",
-          description:
-            "Tüm vücudu aynı anda çalıştıran etkili bir kardiyovasküler egzersiz",
-          difficulty: 2,
-        },
-        "Eliptik Bisiklet": {
-          image:
-            "https://images.unsplash.com/photo-1518644961665-ed172691aaa1?q=80&w=1170&auto=format&fit=crop",
-          description: "Eklemlere minimum baskı ile kardiyovasküler egzersiz",
-          difficulty: 1,
-        },
-        "Kürek Çekme": {
-          image:
-            "https://images.unsplash.com/photo-1521804906057-1df8fdb718b7?q=80&w=1170&auto=format&fit=crop",
-          description:
-            "Tüm vücudu çalıştıran etkili bir kardiyovasküler egzersiz",
-          difficulty: 2,
-        },
-        Yüzme: {
-          image:
-            "https://images.unsplash.com/photo-1560090995-01632a28895b?q=80&w=1169&auto=format&fit=crop",
-          description:
-            "Eklemlere baskı yapmadan tüm vücudu çalıştıran egzersiz",
-          difficulty: 2,
-        },
-        "Bicep Curl": {
-          image:
-            "https://cdn.pixabay.com/photo/2016/11/22/22/25/abs-1850926_1280.jpg",
-          description: "Biseps kasını geliştiren temel egzersiz",
-          difficulty: 1,
-        },
-        "Tricep Extension": {
-          image:
-            "https://images.unsplash.com/photo-1581122584612-713f89daa8eb?q=80&w=1965&auto=format&fit=crop",
-          description: "Triseps kasını geliştiren izolasyon egzersizi",
-          difficulty: 1,
-        },
-        "Hammer Curl": {
-          image:
-            "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?q=80&w=1170&auto=format&fit=crop",
-          description:
-            "Ön kol ve biseps kaslarını bir arada çalıştıran egzersiz",
-          difficulty: 1,
-        },
-        "Skull Crusher": {
-          image:
-            "https://cdn.pixabay.com/photo/2017/04/27/08/29/bench-press-2264825_1280.jpg",
-          description: "Triseps kasını geliştiren etkili bir egzersiz",
-          difficulty: 2,
-        },
-        "Concentration Curl": {
-          image:
-            "https://images.unsplash.com/photo-1606889464198-fcb18894cf50?q=80&w=1780&auto=format&fit=crop",
-          description:
-            "Biseps kasını izole eden ve zirvede sıkışmayı artıran egzersiz",
-          difficulty: 1,
-        },
-        Dips: {
-          image:
-            "https://images.unsplash.com/photo-1598266663439-2056e6900339?q=80&w=1169&auto=format&fit=crop",
-          description:
-            "Triseps ve göğüs kaslarını geliştiren etkili bir vücut ağırlığı egzersizi",
-          difficulty: 2,
-        },
-        "Lateral Raise": {
-          image:
-            "https://cdn.pixabay.com/photo/2018/04/05/17/21/kettlebell-3293475_1280.jpg",
-          description: "Orta deltoid kasını hedefleyen izolasyon egzersizi",
-          difficulty: 1,
-        },
-        "Front Raise": {
-          image:
-            "https://cdn.pixabay.com/photo/2017/08/07/14/02/man-2604149_1280.jpg",
-          description: "Ön deltoid kasını hedefleyen egzersiz",
-          difficulty: 1,
-        },
+        "Arnold Press": {
+          image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTXBDSenGZqdoyZA_m1r7_eK0wf6g5C5Tn3cg&s",
+          description: "Omuz kaslarını farklı açılardan çalıştıran bir egzersiz.",
+          difficulty: 3
+        }
       };
 
-      // Show success message only when needed
-      document.addEventListener("DOMContentLoaded", function () {
-        const successMessage = document.querySelector(".success-message");
-        if (successMessage && successMessage.textContent.trim() !== "") {
-          successMessage.style.display = "block";
-
-          // Hide message after 5 seconds
-          setTimeout(function () {
-            successMessage.style.display = "none";
-          }, 5000);
-        }
-
-        // Pre-populate the workouts listbox with all exercises
-        populateWorkoutsListBox();
-      });
-
-      // Kas grubu değiştiğinde önceki seçimleri korumak için
-      var selectedExercises = {};
+      // Seçili egzersizleri saklamak için global değişken
+      const selectedExercises = {};
 
       // Kas grubu seçimi
       function selectMuscleGroup(element, value) {
-        // Clear any existing success message
-        const successMessage = document.querySelector(".success-message");
-        if (successMessage) {
-          successMessage.style.display = "none";
-        }
+        try {
+          // Clear any existing success message
+          const successMessage = document.querySelector(".success-message");
+          if (successMessage) {
+            successMessage.style.display = "none";
+          }
 
-        // Önceki seçilen kas grubundaki seçili egzersizleri kaydet
-        const previousMuscleGroup = document.getElementById(
-          "<%= ddlMuscleGroup.ClientID %>"
-        ).value;
-        if (previousMuscleGroup) {
-          const listBox = document.getElementById(
-            "<%= lstWorkouts.ClientID %>"
-          );
-          selectedExercises[previousMuscleGroup] = [];
+          // Önceki seçilen kas grubundaki seçili egzersizleri kaydet
+          const previousMuscleGroup = document.getElementById(
+            "<%= ddlMuscleGroup.ClientID %>"
+          ).value;
+          if (previousMuscleGroup) {
+            const listBox = document.getElementById(
+              "<%= lstWorkouts.ClientID %>"
+            );
+            selectedExercises[previousMuscleGroup] = [];
 
-          for (let i = 0; i < listBox.options.length; i++) {
-            if (listBox.options[i].selected) {
-              selectedExercises[previousMuscleGroup].push(
-                listBox.options[i].text
-              );
+            for (let i = 0; i < listBox.options.length; i++) {
+              if (listBox.options[i].selected) {
+                selectedExercises[previousMuscleGroup].push(
+                  listBox.options[i].text
+                );
+              }
             }
           }
+
+          // Tüm kartlardan active sınıfını kaldır
+          document.querySelectorAll(".muscle-card").forEach((card) => {
+            card.classList.remove("active");
+          });
+
+          // Seçilen karta active sınıfını ekle
+          element.classList.add("active");
+
+          // DropDownList'i güncelle
+          const dropdown = document.getElementById(
+            "<%= ddlMuscleGroup.ClientID %>"
+          );
+          dropdown.value = value;
+
+          // Hidden field oluştur veya güncelle
+          let hiddenField = document.getElementById("hiddenMuscleGroup");
+          if (!hiddenField) {
+            hiddenField = document.createElement("input");
+            hiddenField.type = "hidden";
+            hiddenField.id = "hiddenMuscleGroup";
+            hiddenField.name = "hiddenMuscleGroup";
+            document.getElementById("form1").appendChild(hiddenField);
+          }
+          hiddenField.value = value;
+
+          // Egzersiz listesini güncelle
+          updateWorkoutsList(value);
+        } catch (error) {
+          console.error("selectMuscleGroup hatası:", error);
         }
-
-        // Tüm kartlardan active sınıfını kaldır
-        document.querySelectorAll(".muscle-card").forEach((card) => {
-          card.classList.remove("active");
-        });
-
-        // Seçilen karta active sınıfını ekle
-        element.classList.add("active");
-
-        // DropDownList'i güncelle (postback tetiklemeden)
-        const dropdown = document.getElementById(
-          "<%= ddlMuscleGroup.ClientID %>"
-        );
-        dropdown.value = value;
-
-        // Herkese görünmeyen bir hidden field oluştur ve değeri ata
-        let hiddenField = document.getElementById("hiddenMuscleGroup");
-        if (!hiddenField) {
-          hiddenField = document.createElement("input");
-          hiddenField.type = "hidden";
-          hiddenField.id = "hiddenMuscleGroup";
-          hiddenField.name = "hiddenMuscleGroup";
-          document.getElementById("form1").appendChild(hiddenField);
-        }
-        hiddenField.value = value;
-
-        // Egzersiz listesini güncelle
-        updateWorkoutsList(value);
       }
+
+      // Sayfa yüklendiğinde çalışacak kodlar
+      document.addEventListener("DOMContentLoaded", function () {
+        try {
+          // Success message kontrolü
+          const successMessage = document.querySelector(".success-message");
+          if (successMessage && successMessage.textContent.trim() !== "") {
+            successMessage.style.display = "block";
+            setTimeout(function () {
+              successMessage.style.display = "none";
+            }, 5000);
+          }
+
+          // Workouts listbox'ı doldur
+          populateWorkoutsListBox();
+
+          // Kas grubu kartlarına click event listener ekle
+          document.querySelectorAll(".muscle-card").forEach((card) => {
+            card.addEventListener("click", function () {
+              const value = this.getAttribute("data-value");
+              selectMuscleGroup(this, value);
+            });
+          });
+        } catch (error) {
+          console.error("DOMContentLoaded hatası:", error);
+        }
+      });
 
       // Populate the ListBox with all exercises initially (hidden from user)
       function populateWorkoutsListBox() {
-        const listBox = document.getElementById("<%= lstWorkouts.ClientID %>");
+        try {
+          const listBox = document.getElementById(
+            "<%= lstWorkouts.ClientID %>"
+          );
+          if (!listBox) return;
 
-        // Clear existing options
-        listBox.innerHTML = "";
+          // Clear existing options
+          listBox.innerHTML = "";
 
-        // Add all exercises from all muscle groups
-        for (const muscleGroup in workoutsByMuscleGroup) {
-          workoutsByMuscleGroup[muscleGroup].forEach((workout) => {
-            const option = document.createElement("option");
-            option.text = workout;
-            option.value = workout;
-            listBox.add(option);
-          });
+          // Add all exercises from all muscle groups
+          for (const muscleGroup in workoutsByMuscleGroup) {
+            if (Array.isArray(workoutsByMuscleGroup[muscleGroup])) {
+              workoutsByMuscleGroup[muscleGroup].forEach((workout) => {
+                const option = document.createElement("option");
+                option.text = workout;
+                option.value = workout;
+                listBox.add(option);
+              });
+            }
+          }
+        } catch (error) {
+          console.error("populateWorkoutsListBox hatası:", error);
         }
       }
 
       // Update exercises based on selected muscle group
       function updateWorkoutsList(muscleGroup) {
-        const listBox = document.getElementById("<%= lstWorkouts.ClientID %>");
-        const container = document.getElementById("workoutCardsContainer");
+        try {
+          const listBox = document.getElementById(
+            "<%= lstWorkouts.ClientID %>"
+          );
+          const container = document.getElementById("workoutCardsContainer");
+          if (!listBox || !container) return;
 
-        // Clear the container
-        container.innerHTML = "";
+          // Clear the container
+          container.innerHTML = "";
 
-        // Clear the listbox
-        listBox.innerHTML = "";
+          // Clear the listbox
+          listBox.innerHTML = "";
 
-        // Get the workouts for the selected muscle group
-        const workouts = workoutsByMuscleGroup[muscleGroup] || [];
+          // Get the workouts for the selected muscle group
+          const workouts = workoutsByMuscleGroup[muscleGroup] || [];
 
-        // Create workout cards
-        workouts.forEach((workoutName, index) => {
-          const details = workoutDetails[workoutName] || {
-            image:
-              "https://cdn.pixabay.com/photo/2017/05/25/15/08/jogging-2343558_1280.jpg",
-            description: "Bu egzersiz hakkında detaylı bilgi",
-            difficulty: 2,
-          };
+          // Create workout cards
+          workouts.forEach((workoutName, index) => {
+            const details = workoutDetails[workoutName] || {
+              image:
+                "https://cdn.pixabay.com/photo/2017/05/25/15/08/jogging-2343558_1280.jpg",
+              description: "Bu egzersiz hakkında detaylı bilgi",
+              difficulty: 2,
+            };
 
-          // Add option to the listbox
-          const option = document.createElement("option");
-          option.text = workoutName;
-          option.value = workoutName;
+            // Add option to the listbox
+            const option = document.createElement("option");
+            option.text = workoutName;
+            option.value = workoutName;
 
-          // Eğer bu kas grubu için önceden seçilmiş egzersiz varsa, tekrar seçili yap
-          if (
-            selectedExercises[muscleGroup] &&
-            selectedExercises[muscleGroup].includes(workoutName)
-          ) {
-            option.selected = true;
-          }
+            // Eğer bu kas grubu için önceden seçilmiş egzersiz varsa, tekrar seçili yap
+            if (
+              selectedExercises[muscleGroup] &&
+              selectedExercises[muscleGroup].includes(workoutName)
+            ) {
+              option.selected = true;
+            }
 
-          listBox.add(option);
-          const optionIndex = listBox.options.length - 1;
+            listBox.add(option);
+            const optionIndex = listBox.options.length - 1;
 
-          // Check if this workout is selected
-          const isSelected = listBox.options[optionIndex].selected;
+            // Check if this workout is selected
+            const isSelected = listBox.options[optionIndex].selected;
 
-          // Create workout card
-          const card = document.createElement("div");
-          card.className = "workout-card";
-          card.dataset.workoutIndex = optionIndex;
-          card.dataset.workoutName = workoutName;
+            // Create workout card
+            const card = document.createElement("div");
+            card.className = "workout-card";
+            card.dataset.workoutIndex = optionIndex;
+            card.dataset.workoutName = workoutName;
 
-          if (isSelected) {
-            card.classList.add("workout-card-selected");
-          }
+            if (isSelected) {
+              card.classList.add("workout-card-selected");
+            }
 
-          card.innerHTML = `
-            <div class="select-badge" style="${
-              isSelected ? "display: block;" : ""
-            }">
-              <i class="fas fa-check"></i> Seçildi
-            </div>
-            <img src="${details.image}" alt="${workoutName}" />
-            <div class="workout-card-body">
-              <h5 class="workout-card-title">${workoutName}</h5>
-              <p class="workout-card-text">${details.description}</p>
-            </div>
-            <div class="workout-card-footer">
-              <div class="workout-difficulty">
-                Zorluk: 
-                <div class="difficulty-dot ${
-                  details.difficulty >= 1 ? "active" : ""
-                }"></div>
-                <div class="difficulty-dot ${
-                  details.difficulty >= 2 ? "active" : ""
-                }"></div>
-                <div class="difficulty-dot ${
-                  details.difficulty >= 3 ? "active" : ""
-                }"></div>
+            card.innerHTML = `
+              <div class="select-badge" style="${
+                isSelected ? "display: block;" : ""
+              }">
+                <i class="fas fa-check"></i> Seçildi
               </div>
-              <button type="button" class="btn btn-sm btn-outline-primary" 
-                      onclick="toggleWorkoutSelection('${workoutName}', ${optionIndex})">
-                ${isSelected ? "Kaldır" : "Seç"}
-              </button>
-            </div>
-          `;
+              <img src="${details.image}" alt="${workoutName}" />
+              <div class="workout-card-body">
+                <h5 class="workout-card-title">${workoutName}</h5>
+                <p class="workout-card-text">${details.description}</p>
+              </div>
+              <div class="workout-card-footer">
+                <div class="workout-difficulty">
+                  Zorluk:
+                  <div class="difficulty-dot ${
+                    details.difficulty >= 1 ? "active" : ""
+                  }"></div>
+                  <div class="difficulty-dot ${
+                    details.difficulty >= 2 ? "active" : ""
+                  }"></div>
+                  <div class="difficulty-dot ${
+                    details.difficulty >= 3 ? "active" : ""
+                  }"></div>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-primary"
+                        onclick="toggleWorkoutSelection('${workoutName}', ${optionIndex})">
+                  ${isSelected ? "Kaldır" : "Seç"}
+                </button>
+              </div>
+            `;
 
-          container.appendChild(card);
-        });
+            container.appendChild(card);
+          });
 
-        // Add animation effect to simulate page transition without reload
-        container.style.opacity = "0";
-        container.style.transform = "translateY(20px)";
+          // Add animation effect
+          container.style.opacity = "0";
+          container.style.transform = "translateY(20px)";
 
-        setTimeout(() => {
-          container.style.transition = "all 0.5s ease-out";
-          container.style.opacity = "1";
-          container.style.transform = "translateY(0)";
-        }, 50);
+          setTimeout(() => {
+            container.style.transition = "all 0.5s ease-out";
+            container.style.opacity = "1";
+            container.style.transform = "translateY(0)";
+          }, 50);
 
-        // Seçili egzersizleri güncelle
-        saveSelectedWorkouts();
+          // Seçili egzersizleri güncelle
+          saveSelectedWorkouts();
+        } catch (error) {
+          console.error("updateWorkoutsList hatası:", error);
+        }
       }
 
       // Egzersiz seçimini aç/kapat
       function toggleWorkoutSelection(workoutName, index) {
-        const listBox = document.getElementById("<%= lstWorkouts.ClientID %>");
-        const option = listBox.options[index];
+        try {
+          const listBox = document.getElementById(
+            "<%= lstWorkouts.ClientID %>"
+          );
+          const option = listBox.options[index];
 
-        // Seçimi değiştir
-        option.selected = !option.selected;
+          // Seçimi değiştir
+          option.selected = !option.selected;
 
-        // Kartı güncelle
-        const card = document.querySelector(
-          `.workout-card[data-workout-name="${workoutName}"]`
-        );
-        if (card) {
-          const badge = card.querySelector(".select-badge");
-          const selectButton = card.querySelector(".btn");
+          // Kartı güncelle
+          const card = document.querySelector(
+            `.workout-card[data-workout-name="${workoutName}"]`
+          );
+          if (card) {
+            const badge = card.querySelector(".select-badge");
+            const selectButton = card.querySelector(".btn");
 
-          if (option.selected) {
-            card.classList.add("workout-card-selected");
-            badge.style.display = "block";
-            selectButton.textContent = "Kaldır";
-          } else {
-            card.classList.remove("workout-card-selected");
-            badge.style.display = "none";
-            selectButton.textContent = "Seç";
+            if (option.selected) {
+              card.classList.add("workout-card-selected");
+              badge.style.display = "block";
+              selectButton.textContent = "Kaldır";
+            } else {
+              card.classList.remove("workout-card-selected");
+              badge.style.display = "none";
+              selectButton.textContent = "Seç";
+            }
           }
-        }
 
-        // Seçili egzersizleri kaydet (gizli alan olarak)
-        saveSelectedWorkouts();
+          // Seçili egzersizleri kaydet
+          saveSelectedWorkouts();
+        } catch (error) {
+          console.error("toggleWorkoutSelection hatası:", error);
+        }
       }
 
       // Seçili egzersizleri gizli bir input alanına kaydet
       function saveSelectedWorkouts() {
-        const listBox = document.getElementById("<%= lstWorkouts.ClientID %>");
-        const selectedWorkouts = [];
-        const currentMuscleGroup = document.getElementById(
-          "<%= ddlMuscleGroup.ClientID %>"
-        ).value;
+        try {
+          const listBox = document.getElementById(
+            "<%= lstWorkouts.ClientID %>"
+          );
+          const selectedWorkouts = [];
+          const currentMuscleGroup = document.getElementById(
+            "<%= ddlMuscleGroup.ClientID %>"
+          ).value;
 
-        for (let i = 0; i < listBox.options.length; i++) {
-          if (listBox.options[i].selected) {
-            // Her egzersiz için, hangi kas grubuna ait olduğunu belirterek sakla
-            selectedWorkouts.push({
-              muscleGroup: currentMuscleGroup,
-              workoutName: listBox.options[i].text,
-            });
+          for (let i = 0; i < listBox.options.length; i++) {
+            if (listBox.options[i].selected) {
+              selectedWorkouts.push({
+                muscleGroup: currentMuscleGroup,
+                workoutName: listBox.options[i].text,
+              });
 
-            // Seçili egzersizleri kas grubu bazında da kaydet
-            if (!selectedExercises[currentMuscleGroup]) {
-              selectedExercises[currentMuscleGroup] = [];
-            }
-            if (
-              !selectedExercises[currentMuscleGroup].includes(
-                listBox.options[i].text
-              )
-            ) {
-              selectedExercises[currentMuscleGroup].push(
-                listBox.options[i].text
-              );
+              if (!selectedExercises[currentMuscleGroup]) {
+                selectedExercises[currentMuscleGroup] = [];
+              }
+              if (
+                !selectedExercises[currentMuscleGroup].includes(
+                  listBox.options[i].text
+                )
+              ) {
+                selectedExercises[currentMuscleGroup].push(
+                  listBox.options[i].text
+                );
+              }
             }
           }
+
+          // Gizli input oluştur veya güncelle
+          let hiddenField = document.getElementById("selectedWorkoutsHidden");
+          if (!hiddenField) {
+            hiddenField = document.createElement("input");
+            hiddenField.type = "hidden";
+            hiddenField.id = "selectedWorkoutsHidden";
+            hiddenField.name = "selectedWorkoutsHidden";
+            document.getElementById("form1").appendChild(hiddenField);
+          }
+
+          // JSON formatında sakla
+          hiddenField.value = JSON.stringify(selectedWorkouts);
+        } catch (error) {
+          console.error("saveSelectedWorkouts hatası:", error);
         }
-
-        // Gizli input oluştur veya güncelle
-        let hiddenField = document.getElementById("selectedWorkoutsHidden");
-        if (!hiddenField) {
-          hiddenField = document.createElement("input");
-          hiddenField.type = "hidden";
-          hiddenField.id = "selectedWorkoutsHidden";
-          hiddenField.name = "selectedWorkoutsHidden";
-          document.getElementById("form1").appendChild(hiddenField);
-        }
-
-        // Debug için konsola bas
-        console.log("Seçilen egzersizler:", selectedExercises);
-        console.log("Gönderilecek veri:", selectedWorkouts);
-
-        // JSON formatında sakla
-        hiddenField.value = JSON.stringify(selectedWorkouts);
       }
 
       // Kaydet butonuna tıklamadan önce sunucu tarafı değerleri güncelle
       document.getElementById("form1").addEventListener("submit", function (e) {
         try {
-          // Debug için konsola bilgi yazdır
-          console.log("Form submit başladı");
-
           // Seçili kas grubunu kontrol et
           const muscleGroupDropdown = document.getElementById(
             "<%= ddlMuscleGroup.ClientID %>"
@@ -1419,21 +1295,18 @@ Inherits="PersonalizedWorkoutPlanner.Program" EnableEventValidation="false" %>
             alert("Lütfen bir kas grubu seçin.");
             return false;
           }
-          console.log("Seçili kas grubu:", muscleGroupDropdown.value);
 
           // Seçili egzersizleri kontrol et
           const listBox = document.getElementById(
             "<%= lstWorkouts.ClientID %>"
           );
           let anySelected = false;
-          let selectedItems = [];
           for (let i = 0; i < listBox.options.length; i++) {
             if (listBox.options[i].selected) {
               anySelected = true;
-              selectedItems.push(listBox.options[i].text);
+              break;
             }
           }
-          console.log("Seçili egzersizler:", selectedItems);
 
           if (!anySelected) {
             e.preventDefault();
@@ -1441,30 +1314,19 @@ Inherits="PersonalizedWorkoutPlanner.Program" EnableEventValidation="false" %>
             return false;
           }
 
-          // Son bir kez dropdown değerini güncelle (postback için)
+          // Son bir kez dropdown değerini güncelle
           let hiddenField = document.getElementById("hiddenMuscleGroup");
           if (hiddenField) {
             muscleGroupDropdown.value = hiddenField.value;
-            console.log("Kas grubu hidden field değeri:", hiddenField.value);
           }
 
           // Seçili egzersizleri güncelle
           saveSelectedWorkouts();
 
-          // Debug için hidden field değerini yazdır
-          const workoutsHidden = document.getElementById(
-            "selectedWorkoutsHidden"
-          );
-          if (workoutsHidden) {
-            console.log("selectedWorkoutsHidden değeri:", workoutsHidden.value);
-          }
-
-          // İşlemin devam etmesine izin ver
-          console.log("Form submit tamamlanıyor...");
           return true;
-        } catch (err) {
-          console.error("Form submit hatası:", err);
-          return true; // Hata olsa bile devam et
+        } catch (error) {
+          console.error("Form submit hatası:", error);
+          return true;
         }
       });
     </script>

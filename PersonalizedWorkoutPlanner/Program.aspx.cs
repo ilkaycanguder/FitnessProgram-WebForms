@@ -4,6 +4,9 @@ using System.Data.SqlClient;
 using System.Configuration;
 using System.Web.UI.WebControls;
 using System.Linq;
+using System.Text.Json;
+using System.IO;
+using System.Web.Script.Serialization;
 
 namespace PersonalizedWorkoutPlanner
 {
@@ -19,68 +22,77 @@ namespace PersonalizedWorkoutPlanner
         protected System.Web.UI.WebControls.CheckBox chkPazar;
 
         // Genişletilmiş program önerileri
-        private Dictionary<string, List<string>> workoutPlans = new Dictionary<string, List<string>>()
+        private Dictionary<string, List<string>> workoutPlans;
+
+        // JSON verilerini JavaScript'e aktarmak için property
+        public string WorkoutPlansJson
         {
-            { "Göğüs", new List<string> {
-                "Bench Press",
-                "Incline Dumbbell Press",
-                "Push-up",
-                "Dumbbell Fly",
-                "Cable Crossover",
-                "Chest Dip"
-            }},
-
-            { "Bacak", new List<string> {
-                "Squat",
-                "Lunge",
-                "Leg Press",
-                "Leg Extension",
-                "Hamstring Curl",
-                "Calf Raise"
-            }},
-
-            { "Sırt", new List<string> {
-                "Deadlift",
-                "Lat Pulldown",
-                "Barbell Row",
-                "Pull-up",
-                "T-Bar Row",
-                "Face Pull"
-            }},
-
-            { "Kardiyo", new List<string> {
-                "Koşu Bandı",
-                "Bisiklet",
-                "İp Atlama",
-                "Eliptik Bisiklet",
-                "Kürek Çekme",
-                "Yüzme"
-            }},
-
-            { "Kol", new List<string> {
-                "Bicep Curl",
-                "Tricep Extension",
-                "Hammer Curl",
-                "Skull Crusher",
-                "Concentration Curl",
-                "Dips"
-            }},
-
-            { "Omuz", new List<string> {
-                "Shoulder Press",
-                "Lateral Raise",
-                "Front Raise",
-                "Reverse Fly",
-                "Face Pull",
-                "Upright Row"
-            }}
-        };
+            get
+            {
+                if (workoutPlans == null)
+                {
+                    LoadWorkoutPlans();
+                }
+                // JavaScriptSerializer kullanarak güvenli JSON üretimi
+                var serializer = new JavaScriptSerializer();
+                return serializer.Serialize(workoutPlans);
+            }
+        }
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (!IsPostBack && Session["UserId"] == null)
+            if (!IsPostBack)
             {
-                Response.Redirect("Login.aspx");
+                LoadWorkoutPlans();
+                if (Session["UserId"] == null)
+                {
+                    Response.Redirect("Login.aspx");
+                }
+            }
+        }
+
+        private void LoadWorkoutPlans()
+        {
+            try
+            {
+                string jsonFilePath = Server.MapPath("~/App_Data/workoutPlans.json");
+                if (File.Exists(jsonFilePath))
+                {
+                    string jsonString = File.ReadAllText(jsonFilePath);
+                    var serializer = new JavaScriptSerializer();
+                    workoutPlans = serializer.Deserialize<Dictionary<string, List<string>>>(jsonString);
+                }
+                else
+                {
+                    // Varsayılan veri yapısı
+                    workoutPlans = new Dictionary<string, List<string>>
+                    {
+                        { "Göğüs", new List<string> { "Bench Press", "Incline Dumbbell Press", "Push-up", "Dumbbell Fly", "Cable Crossover", "Chest Dip" } },
+                        { "Bacak", new List<string> { "Squat", "Lunge", "Leg Press", "Leg Extension", "Hamstring Curl", "Calf Raise" } },
+                        { "Sırt", new List<string> { "Deadlift", "Lat Pulldown", "Barbell Row", "Pull-up", "T-Bar Row" } },
+                        { "Kardiyo", new List<string> { "HIIT", "Burpee" } },
+                        { "Kol", new List<string> { "Preacher Curl" } },
+                        { "Omuz", new List<string> { "Shoulder Press", "Reverse Fly", "Face Pull", "Upright Row", "Arnold Press" } }
+                    };
+
+                    // JSON dosyasını oluştur
+                    var serializer = new JavaScriptSerializer();
+                    string defaultJson = serializer.Serialize(workoutPlans);
+                    File.WriteAllText(jsonFilePath, defaultJson);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Hata durumunda varsayılan veri yapısını kullan
+                workoutPlans = new Dictionary<string, List<string>>
+                {
+                    { "Göğüs", new List<string> { "Bench Press", "Incline Dumbbell Press", "Push-up", "Dumbbell Fly", "Cable Crossover", "Chest Dip" } },
+                    { "Bacak", new List<string> { "Squat", "Lunge", "Leg Press", "Leg Extension", "Hamstring Curl", "Calf Raise" } },
+                    { "Sırt", new List<string> { "Deadlift", "Lat Pulldown", "Barbell Row", "Pull-up", "T-Bar Row" } },
+                    { "Kardiyo", new List<string> { "HIIT", "Burpee" } },
+                    { "Kol", new List<string> { "Preacher Curl" } },
+                    { "Omuz", new List<string> { "Shoulder Press", "Reverse Fly", "Face Pull", "Upright Row", "Arnold Press" } }
+                };
             }
         }
 
@@ -118,49 +130,9 @@ namespace PersonalizedWorkoutPlanner
                 {
                     try
                     {
-                        // Elimizde JSON formatında veri var: [{"muscleGroup":"Göğüs","workoutName":"Bench Press"},...]
-                        // Manuel JSON parsing yerine daha güvenilir yöntem kullanalım
-
-                        // String'i temizle
-                        string json = hiddenWorkouts.Trim();
-
-                        // Basit çözümleme - köşeli parantezleri kaldır
-                        if (json.StartsWith("[") && json.EndsWith("]"))
-                        {
-                            json = json.Substring(1, json.Length - 2);
-
-                            // Her bir öğeyi ayır: {"muscleGroup":"Göğüs","workoutName":"Bench Press"}
-                            string[] items = json.Split(new string[] { "},{" }, StringSplitOptions.None);
-
-                            foreach (string item in items)
-                            {
-                                // Süslü parantezleri ve tırnak işaretlerini temizle
-                                string cleanItem = item
-                                    .Replace("{", "")
-                                    .Replace("}", "")
-                                    .Replace("\"muscleGroup\":\"", "muscleGroup:")
-                                    .Replace("\",\"workoutName\":\"", ",workoutName:")
-                                    .Replace("\"", "");
-
-                                // Bileşenleri ayır
-                                string[] pairs = cleanItem.Split(',');
-
-                                if (pairs.Length >= 2)
-                                {
-                                    string muscleGroup = pairs[0].Replace("muscleGroup:", "").Trim();
-                                    string workoutName = pairs[1].Replace("workoutName:", "").Trim();
-
-                                    if (!string.IsNullOrEmpty(muscleGroup) && !string.IsNullOrEmpty(workoutName))
-                                    {
-                                        selectedWorkouts.Add(new WorkoutSelection
-                                        {
-                                            MuscleGroup = muscleGroup,
-                                            WorkoutName = workoutName
-                                        });
-                                    }
-                                }
-                            }
-                        }
+                        // JavaScriptSerializer ile JSON parse
+                        var serializer = new JavaScriptSerializer();
+                        selectedWorkouts = serializer.Deserialize<List<WorkoutSelection>>(hiddenWorkouts);
                     }
                     catch (Exception ex)
                     {

@@ -288,12 +288,12 @@
                     </ul>
                     <div class="user-nav">
                         <% if (Session["UserId"] != null) { %>
-                            <a class="profile-link" runat="server" href="~/Profile.aspx">
-                                <i class="fas fa-user-circle"></i> Profil
-                            </a>
+                        <a class="profile-link" runat="server" href="~/Profile.aspx">
+                            <i class="fas fa-user-circle"></i> Profil
+                        </a>
                             <asp:LinkButton ID="btnLogout" CssClass="logout-link" runat="server" OnClick="LogOut">
-                                <i class="fas fa-sign-out-alt me-1"></i> Çıkış
-                            </asp:LinkButton>
+                            <i class="fas fa-sign-out-alt me-1"></i> Çıkış
+                        </asp:LinkButton>
                         <% } %>
                     </div>
                 </div>
