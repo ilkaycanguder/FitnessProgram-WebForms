@@ -589,6 +589,98 @@ Inherits="PersonalizedWorkoutPlanner.Program" EnableEventValidation="false" %>
         gap: 25px;
       }
 
+      /* Haftanın Günleri için özel stiller */
+      .weekday-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 10px;
+      }
+
+      .weekday-item {
+        position: relative;
+        transition: all 0.3s ease;
+      }
+
+      .weekday-checkbox {
+        position: absolute;
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .weekday-label {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        border: 2px solid #e1e8f3;
+        background-color: #f8fafd;
+        color: var(--primary-color);
+        font-weight: 600;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        font-size: 0.95rem;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        user-select: none;
+      }
+
+      .weekday-checkbox:checked + .weekday-label {
+        background: var(--gradient-accent);
+        color: white;
+        border-color: transparent;
+        box-shadow: 0 8px 15px rgba(157, 78, 221, 0.25);
+        transform: translateY(-3px);
+      }
+
+      .weekday-checkbox:focus + .weekday-label {
+        box-shadow: 0 0 0 2px rgba(157, 78, 221, 0.3), 0 8px 15px rgba(157, 78, 221, 0.25);
+      }
+
+      .weekday-label:hover {
+        transform: translateY(-3px);
+        border-color: #bcd0f7;
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .weekday-label .day-abbr {
+        display: block;
+        font-size: 1rem;
+        font-weight: 700;
+      }
+
+      .weekday-label .day-full {
+        display: block;
+        font-size: 0.75rem;
+        margin-top: 2px;
+        opacity: 0.9;
+      }
+
+      @media (max-width: 768px) {
+        .weekday-container {
+          justify-content: center;
+        }
+        
+        .weekday-label {
+          width: 60px;
+          height: 60px;
+        }
+      }
+
+      @media (max-width: 576px) {
+        .weekday-label {
+          width: 50px;
+          height: 50px;
+          font-size: 0.85rem;
+        }
+        
+        .weekday-label .day-full {
+          display: none;
+        }
+      }
+
       @media (max-width: 992px) {
         .muscle-card {
           width: calc(50% - 10px);
@@ -737,62 +829,89 @@ Inherits="PersonalizedWorkoutPlanner.Program" EnableEventValidation="false" %>
 
         <div class="form-group">
           <label class="form-label">Haftanın Günleri</label>
-          <div class="d-flex flex-wrap gap-2">
-            <div class="form-check form-check-inline">
-              <asp:CheckBox
-                ID="chkPazartesi"
-                runat="server"
-                CssClass="form-check-input"
+          <div class="weekday-container">
+            <div class="weekday-item">
+              <asp:CheckBox 
+                ID="chkPazartesi" 
+                runat="server" 
+                CssClass="weekday-checkbox" 
               />
-              <label class="form-check-label" for="chkPazartesi">Pzt</label>
+              <label class="weekday-label" for="<%= chkPazartesi.ClientID %>">
+                <span class="day-abbr">Pzt</span>
+                <span class="day-full">Pazartesi</span>
+              </label>
             </div>
-            <div class="form-check form-check-inline">
-              <asp:CheckBox
-                ID="chkSali"
-                runat="server"
-                CssClass="form-check-input"
+            
+            <div class="weekday-item">
+              <asp:CheckBox 
+                ID="chkSali" 
+                runat="server" 
+                CssClass="weekday-checkbox" 
               />
-              <label class="form-check-label" for="chkSali">Salı</label>
+              <label class="weekday-label" for="<%= chkSali.ClientID %>">
+                <span class="day-abbr">Salı</span>
+                <span class="day-full">Salı</span>
+              </label>
             </div>
-            <div class="form-check form-check-inline">
-              <asp:CheckBox
-                ID="chkCarsamba"
-                runat="server"
-                CssClass="form-check-input"
+            
+            <div class="weekday-item">
+              <asp:CheckBox 
+                ID="chkCarsamba" 
+                runat="server" 
+                CssClass="weekday-checkbox" 
               />
-              <label class="form-check-label" for="chkCarsamba">Çarş</label>
+              <label class="weekday-label" for="<%= chkCarsamba.ClientID %>">
+                <span class="day-abbr">Çarş</span>
+                <span class="day-full">Çarşamba</span>
+              </label>
             </div>
-            <div class="form-check form-check-inline">
-              <asp:CheckBox
-                ID="chkPersembe"
-                runat="server"
-                CssClass="form-check-input"
+            
+            <div class="weekday-item">
+              <asp:CheckBox 
+                ID="chkPersembe" 
+                runat="server" 
+                CssClass="weekday-checkbox" 
               />
-              <label class="form-check-label" for="chkPersembe">Perş</label>
+              <label class="weekday-label" for="<%= chkPersembe.ClientID %>">
+                <span class="day-abbr">Perş</span>
+                <span class="day-full">Perşembe</span>
+              </label>
             </div>
-            <div class="form-check form-check-inline">
-              <asp:CheckBox
-                ID="chkCuma"
-                runat="server"
-                CssClass="form-check-input"
+            
+            <div class="weekday-item">
+              <asp:CheckBox 
+                ID="chkCuma" 
+                runat="server" 
+                CssClass="weekday-checkbox" 
               />
-              <label class="form-check-label" for="chkCuma">Cuma</label>
+              <label class="weekday-label" for="<%= chkCuma.ClientID %>">
+                <span class="day-abbr">Cuma</span>
+                <span class="day-full">Cuma</span>
+              </label>
             </div>
-            <div class="form-check form-check-inline">
-              <asp:CheckBox
-                ID="chkCumartesi"
-                runat="server"
-                CssClass="form-check-input"
+            
+            <div class="weekday-item">
+              <asp:CheckBox 
+                ID="chkCumartesi" 
+                runat="server" 
+                CssClass="weekday-checkbox" 
               />
-              <label class="form-check-label" for="chkCumartesi">Cmt</label>
+              <label class="weekday-label" for="<%= chkCumartesi.ClientID %>">
+                <span class="day-abbr">Cmt</span>
+                <span class="day-full">Cumartesi</span>
+              </label>
             </div>
-            <div class="form-check form-check-inline">
-              <asp:CheckBox
-                ID="chkPazar"
-                runat="server"
-                CssClass="form-check-input"
+            
+            <div class="weekday-item">
+              <asp:CheckBox 
+                ID="chkPazar" 
+                runat="server" 
+                CssClass="weekday-checkbox" 
               />
-              <label class="form-check-label" for="chkPazar">Pazar</label>
+              <label class="weekday-label" for="<%= chkPazar.ClientID %>">
+                <span class="day-abbr">Pzr</span>
+                <span class="day-full">Pazar</span>
+              </label>
             </div>
           </div>
         </div>
