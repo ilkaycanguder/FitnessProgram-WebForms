@@ -238,6 +238,17 @@ Inherits="PersonalizedWorkoutPlanner.MyProgram" %>
       box-shadow: 0 2px 10px rgba(0,0,0,0.2);
     }
     
+    #captureContainer {
+      position: absolute;
+      top: -9999px;
+      left: -9999px;
+      width: 1200px;
+      background-color: white;
+      padding: 20px;
+      z-index: -1;
+      visibility: hidden;
+    }
+    
     .btn-group {
       display: flex;
       flex-wrap: wrap;
@@ -335,6 +346,7 @@ Inherits="PersonalizedWorkoutPlanner.MyProgram" %>
 
     <asp:Panel ID="pnlPrograms" runat="server">
       <div id="captureResult"></div>
+      <div id="captureContainer"></div>
       <button type="button" id="btnImageDownload" class="btn-print">
         <i class="fas fa-image"></i> Programı Resim Olarak İndir
       </button>
@@ -906,93 +918,87 @@ Inherits="PersonalizedWorkoutPlanner.MyProgram" %>
       const resultElement = $("#captureResult");
       
       try {
-        // Navbar ve diğer yazdırılmayacak elementleri geçici olarak gizle
-        $(".navbar, .footer, .btn-print, .btn-delete").hide();
+        // Yakalama için görünmez container
+        const captureContainer = document.getElementById('captureContainer');
         
-        // Tüm içeriğin görünür olduğundan emin ol
-        const content = document.getElementById("programContent");
+        // Önce içeriği temizle
+        $(captureContainer).empty();
         
-        // Görünür içeriğin orijinal boyutunu kaydet
-        const originalHeight = $(content).height();
+        // Programları içeren div'i klonla
+        const originalContent = document.getElementById('programContent');
+        const clonedContent = originalContent.cloneNode(true);
         
-        // Boşluk eklenerek tüm içeriğin görünür olmasını sağla
-        $(content).css({
-          "width": "100%",
-          "display": "flex",
-          "flex-wrap": "wrap",
-          "justify-content": "center",
-          "background-color": "#ffffff",
-          "padding": "20px",
-          "border-radius": "8px",
-          "margin-bottom": "50px"
+        // Klonlanmış içeriğin ID'sini değiştir
+        clonedContent.id = 'clonedContent';
+        
+        // Klonlanmış içeriği görünmez konteyner'a ekle
+        captureContainer.appendChild(clonedContent);
+        
+        // Klonlanmış içeriğin düzgün görünmesi için CSS ayarları
+        $(clonedContent).css({
+          'display': 'flex',
+          'flex-wrap': 'wrap',
+          'justify-content': 'center',
+          'gap': '1rem',
+          'width': '1200px',
+          'background-color': '#fff',
+          'padding': '20px',
+          'box-sizing': 'border-box'
         });
         
-        // Sayfanın programContent kısmını canvas'a dönüştür
-        setTimeout(function() {
-          html2canvas(content, {
-            scale: 1.5,           // Daha düşük ölçek, daha hızlı işlem
-            useCORS: true,        // Resim kaynaklarının yüklenmesine izin ver
-            allowTaint: true,     // Tainted canvas'a izin ver
-            backgroundColor: "#ffffff", // Arkaplan beyaz olsun
-            logging: true,        // Hata ayıklama için
-            letterRendering: true,
-            onrendered: function(canvas) {
-              console.log("Canvas rendered");
-            }
-          }).then(function(canvas) {
-            console.log("Canvas created successfully");
-            
-            // Canvas'ı resme dönüştür
-            try {
-              const imgData = canvas.toDataURL('image/png');
-              
-              // Resmi indirmek için link oluştur
-              const link = document.createElement('a');
-              link.download = 'antrenman-programim.png';
-              link.href = imgData;
-              
-              // Link'i tıkla ve indir
-              document.body.appendChild(link);
-              link.click();
-              document.body.removeChild(link);
-              
-              // Başarı mesajı göster
-              resultElement.text("Program resmi başarıyla indirildi!").css("background-color", "#4CAF50").fadeIn().delay(3000).fadeOut();
-              
-              console.log("Image downloaded successfully");
-            } catch (error) {
-              console.error("Error converting canvas to image: ", error);
-              resultElement.text("Resim oluşturulurken hata: " + error.message).css("background-color", "#F44336").fadeIn().delay(3000).fadeOut();
-            }
-            
-            // Sayfayı normal haline getir
-            $(".navbar, .footer, .btn-print, .btn-delete").show();
-            btn.html('<i class="fas fa-image"></i> Programı Resim Olarak İndir').prop('disabled', false);
-            
-            // İçeriği orijinal durumuna getir
-            $(content).css({
-              "height": "",
-              "padding": "",
-              "margin-bottom": "",
-              "background-color": ""
-            });
-            
-          }).catch(function(error) {
-            console.error("Error creating canvas: ", error);
-            resultElement.text("Canvas oluşturulurken hata: " + error.message).css("background-color", "#F44336").fadeIn().delay(3000).fadeOut();
-            
-            // Hata durumunda sayfayı normal haline getir
-            $(".navbar, .footer, .btn-print, .btn-delete").show();
-            btn.html('<i class="fas fa-image"></i> Programı Resim Olarak İndir').prop('disabled', false);
-          });
-        }, 500); // Görsel değişikliklerin uygulanması için bekle
+        // Delete butonlarını gizle
+        $(clonedContent).find('.btn-delete').remove();
         
+        // HTML2Canvas ile görüntü oluştur
+        html2canvas(captureContainer, {
+          scale: 1,
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: "#ffffff",
+          logging: false,
+          letterRendering: true
+        }).then(function(canvas) {
+          // Canvas'ı resme dönüştür
+          try {
+            // Canvas'ı resim verisine dönüştür
+            const imgData = canvas.toDataURL('image/png');
+            
+            // Resmi indirmek için link oluştur
+            const link = document.createElement('a');
+            link.download = 'antrenman-programim.png';
+            link.href = imgData;
+            
+            // Link'i tıkla ve indir
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // Başarı mesajı göster
+            resultElement.text("Program resmi başarıyla indirildi!").css("background-color", "#4CAF50").fadeIn().delay(3000).fadeOut();
+            
+            console.log("Image downloaded successfully");
+          } catch (error) {
+            console.error("Error converting canvas to image: ", error);
+            resultElement.text("Resim oluşturulurken hata: " + error.message).css("background-color", "#F44336").fadeIn().delay(3000).fadeOut();
+          }
+          
+          // İşlem tamamlandıktan sonra temizlik
+          $(captureContainer).empty();
+          btn.html('<i class="fas fa-image"></i> Programı Resim Olarak İndir').prop('disabled', false);
+          
+        }).catch(function(error) {
+          console.error("Error creating canvas: ", error);
+          resultElement.text("Canvas oluşturulurken hata: " + error.message).css("background-color", "#F44336").fadeIn().delay(3000).fadeOut();
+          
+          // Hata durumunda buton ve içeriği normal durumuna getir
+          $(captureContainer).empty();
+          btn.html('<i class="fas fa-image"></i> Programı Resim Olarak İndir').prop('disabled', false);
+        });
       } catch (error) {
         console.error("General error in capture function: ", error);
         resultElement.text("Beklenmeyen hata: " + error.message).css("background-color", "#F44336").fadeIn().delay(3000).fadeOut();
         
-        // Hata durumunda sayfayı normal haline getir
-        $(".navbar, .footer, .btn-print, .btn-delete").show();
+        // Hata durumunda buton ve içeriği normal durumuna getir
         btn.html('<i class="fas fa-image"></i> Programı Resim Olarak İndir').prop('disabled', false);
       }
     }
