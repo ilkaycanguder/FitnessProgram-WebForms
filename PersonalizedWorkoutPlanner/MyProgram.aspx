@@ -5,6 +5,8 @@ Inherits="PersonalizedWorkoutPlanner.MyProgram" %>
 <asp:Content ID="BodyContent" ContentPlaceHolderID="MainContent" runat="server">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <!-- HTML to PDF Kütüphanesi -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     .program-container {
       margin-top: 2rem;
@@ -13,7 +15,7 @@ Inherits="PersonalizedWorkoutPlanner.MyProgram" %>
     .program-days-row {
       display: flex;
       flex-wrap: nowrap;
-      gap: 1rem;
+      gap: 1.5rem;
       justify-content: flex-start;
       margin-bottom: 2rem;
       overflow-x: auto;
@@ -21,9 +23,9 @@ Inherits="PersonalizedWorkoutPlanner.MyProgram" %>
     }
 
     .day-section {
-      flex: 0 0 180px;
-      min-width: 150px;
-      max-width: 200px;
+      flex: 0 0 200px;
+      min-width: 200px;
+      max-width: 220px;
       background: #fff;
       border-radius: 15px;
       box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
@@ -177,13 +179,45 @@ Inherits="PersonalizedWorkoutPlanner.MyProgram" %>
       color: #c0392b;
     }
 
+    .btn-print {
+      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin: 0 auto 20px auto;
+      box-shadow: 0 4px 10px rgba(30, 60, 114, 0.2);
+    }
+    
+    .btn-print:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 15px rgba(30, 60, 114, 0.3);
+    }
+    
+    .btn-print i {
+      font-size: 1.1rem;
+    }
+
     @media (max-width: 900px) {
       .program-days-row {
         /* flex-direction: column; */
-        gap: 0.7rem;
+        gap: 1rem;
       }
       .day-section {
-        max-width: 180px;
+        max-width: 200px;
+      }
+    }
+    
+    @media print {
+      .no-print {
+        display: none !important;
       }
     }
   </style>
@@ -214,7 +248,11 @@ Inherits="PersonalizedWorkoutPlanner.MyProgram" %>
     <asp:Button ID="btnUpdateDay" runat="server" CssClass="d-none" OnClick="btnUpdateDay_Click" Text="Güncelle" />
 
     <asp:Panel ID="pnlPrograms" runat="server">
-      <div class="program-days-row">
+      <button type="button" id="btnDownloadPDF" class="btn-print">
+        <i class="fas fa-file-pdf"></i> Programı PDF Olarak İndir
+      </button>
+      
+      <div id="programContent" class="program-days-row">
         <!-- Pazartesi -->
         <div
           class="day-section"
@@ -695,6 +733,11 @@ Inherits="PersonalizedWorkoutPlanner.MyProgram" %>
     // Sayfa yüklendiğinde çalışacak kod
     $(document).ready(function() {
       console.log("Sayfa yüklendi ve hazır");
+      
+      // PDF İndirme butonu
+      $("#btnDownloadPDF").click(function() {
+        generatePDF();
+      });
     });
 
     function onDragStart(e, el) {
@@ -765,5 +808,29 @@ Inherits="PersonalizedWorkoutPlanner.MyProgram" %>
         };
       });
     });
+
+    // PDF Oluşturma ve İndirme Fonksiyonu
+    function generatePDF() {
+      // Navbar ve diğer yazdırılmayacak elementleri geçici olarak gizle
+      $(".navbar, .footer, .btn-print, .btn-delete").addClass("no-print");
+      
+      // PDF ayarları
+      const element = document.getElementById('programContent');
+      const opt = {
+        margin: [10, 10, 10, 10],
+        filename: 'antrenman-programim.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+      };
+      
+      // PDF oluştur ve indir
+      html2pdf().set(opt).from(element).save().then(function() {
+        // İşlem tamamlandıktan sonra gizlenen elementleri göster
+        setTimeout(function() {
+          $(".navbar, .footer, .btn-print, .btn-delete").removeClass("no-print");
+        }, 1000);
+      });
+    }
   </script>
 </asp:Content>
