@@ -593,13 +593,15 @@ Inherits="PersonalizedWorkoutPlanner.Program" EnableEventValidation="false" %>
       .weekday-container {
         display: flex;
         flex-wrap: wrap;
-        gap: 12px;
-        margin-top: 10px;
+        gap: 15px;
+        margin-top: 15px;
       }
 
       .weekday-item {
         position: relative;
         transition: all 0.3s ease;
+        flex: 1;
+        min-width: 120px;
       }
 
       .weekday-checkbox {
@@ -611,20 +613,22 @@ Inherits="PersonalizedWorkoutPlanner.Program" EnableEventValidation="false" %>
 
       .weekday-label {
         display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
-        width: 70px;
-        height: 70px;
-        border-radius: 50%;
+        width: 100%;
+        height: 60px;
+        border-radius: 12px;
         border: 2px solid #e1e8f3;
         background-color: #f8fafd;
         color: var(--primary-color);
         font-weight: 600;
         transition: all 0.3s ease;
         cursor: pointer;
-        font-size: 0.95rem;
+        font-size: 1rem;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
         user-select: none;
+        padding: 10px;
       }
 
       .weekday-checkbox:checked + .weekday-label {
@@ -646,38 +650,52 @@ Inherits="PersonalizedWorkoutPlanner.Program" EnableEventValidation="false" %>
       }
 
       .weekday-label .day-abbr {
-        display: block;
-        font-size: 1rem;
-        font-weight: 700;
+        display: none;
       }
 
       .weekday-label .day-full {
         display: block;
-        font-size: 0.75rem;
-        margin-top: 2px;
-        opacity: 0.9;
+        font-size: 1rem;
+        font-weight: 600;
+      }
+
+      @media (max-width: 992px) {
+        .weekday-container {
+          gap: 10px;
+        }
+        
+        .weekday-item {
+          min-width: 110px;
+        }
       }
 
       @media (max-width: 768px) {
         .weekday-container {
-          justify-content: center;
+          gap: 8px;
         }
         
-        .weekday-label {
-          width: 60px;
-          height: 60px;
+        .weekday-item {
+          min-width: 90px;
         }
       }
 
       @media (max-width: 576px) {
+        .weekday-container {
+          gap: 6px;
+        }
+        
+        .weekday-item {
+          min-width: 30%;
+          margin-bottom: 8px;
+        }
+        
         .weekday-label {
-          width: 50px;
           height: 50px;
-          font-size: 0.85rem;
+          padding: 5px;
         }
         
         .weekday-label .day-full {
-          display: none;
+          font-size: 0.9rem;
         }
       }
 
