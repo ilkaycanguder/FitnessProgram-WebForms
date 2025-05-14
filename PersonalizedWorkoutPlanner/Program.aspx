@@ -228,9 +228,12 @@ Inherits="PersonalizedWorkoutPlanner.Program" EnableEventValidation="false" %>
         width: 100%;
         height: 160px;
         object-fit: cover;
+        object-position: center;
         margin-bottom: 0;
         transition: all 0.4s ease;
         filter: saturate(0.9);
+        max-width: 100%;
+        border-radius: 15px 15px 0 0;
       }
 
       .muscle-card:hover img {
@@ -297,10 +300,13 @@ Inherits="PersonalizedWorkoutPlanner.Program" EnableEventValidation="false" %>
 
       .workout-card img {
         width: 100%;
-        height: 180px;
+        height: 220px;
         object-fit: cover;
+        object-position: center;
         transition: all 0.4s ease;
         filter: saturate(0.9);
+        max-width: 100%;
+        border-radius: 15px 15px 0 0;
       }
 
       .workout-card:hover img {
@@ -823,6 +829,34 @@ Inherits="PersonalizedWorkoutPlanner.Program" EnableEventValidation="false" %>
       </div>
     </form>
 
+    <!-- Egzersiz Görsel Modal -->
+    <div class="modal fade" id="exerciseImageModal" tabindex="-1" aria-labelledby="exerciseImageModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exerciseImageModalLabel">Egzersiz Detayı</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+          </div>
+          <div class="modal-body text-center">
+            <img id="modalExerciseImage" class="img-fluid rounded" src="" alt="Egzersiz Görseli" style="max-height: 70vh; width: auto;" />
+            <h4 id="modalExerciseTitle" class="mt-3 mb-2"></h4>
+            <p id="modalExerciseDescription" class="text-muted"></p>
+            <div class="mt-3">
+              <span class="me-2">Zorluk:</span>
+              <div id="modalDifficultyDots" class="d-inline-block">
+                <div class="difficulty-dot d-inline-block"></div>
+                <div class="difficulty-dot d-inline-block"></div>
+                <div class="difficulty-dot d-inline-block"></div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script type="text/javascript">
       // Server'dan gelen JSON verisini al
@@ -845,6 +879,7 @@ Inherits="PersonalizedWorkoutPlanner.Program" EnableEventValidation="false" %>
 
       // Egzersiz detayları
       const workoutDetails = {
+        // Göğüs hareketleri
         "Bench Press": {
           image: "https://uk.gymshark.com/_next/image?url=https%3A%2F%2Fimages.ctfassets.net%2F8urtyqugdt2l%2F2bMyO0jZaRJjfRptw60iwG%2F17c391156dd01ae6920c672cc2744fb1%2Fdesktop-bench-press.jpg&w=3840&q=85",
           description: "Göğüs kaslarını çalıştıran temel bir egzersiz. Barbell veya dumbbell ile yapılabilir.",
@@ -875,6 +910,53 @@ Inherits="PersonalizedWorkoutPlanner.Program" EnableEventValidation="false" %>
           description: "Göğüs ve triceps kaslarını çalıştıran, paralel bar üzerinde yapılan bir egzersiz.",
           difficulty: 3
         },
+        "Decline Bench Press": {
+          image: "Images/Exercises/Göğüs/decline-bench-press.jpg",
+          description: "Alt göğüs kaslarını çalıştıran bir bench press varyasyonu.",
+          difficulty: 3
+        },
+        "Machine Chest Press": {
+          image: "Images/Exercises/Göğüs/machine-chest-press.jpg",
+          description: "Göğüs kaslarını çalıştıran makine egzersizi.",
+          difficulty: 2
+        },
+        "Pec Deck Fly": {
+          image: "Images/Exercises/Göğüs/pec-deck-fly.jpg",
+          description: "Göğüs kaslarını izole eden makine egzersizi.",
+          difficulty: 2
+        },
+        "Incline Cable Fly": {
+          image: "Images/Exercises/Göğüs/incline-cable-fly.jpg",
+          description: "Üst göğüs kaslarını hedefleyen kablo egzersizi.",
+          difficulty: 2
+        },
+        "Smith Machine Bench Press": {
+          image: "Images/Exercises/Göğüs/smith-machine-bench-press.jpg",
+          description: "Smith makinesi kullanılarak yapılan bench press.",
+          difficulty: 3
+        },
+        "Wide Grip Push-up": {
+          image: "Images/Exercises/Göğüs/wide-grip-push-up.jpg",
+          description: "Göğüs kaslarının dış kısımlarını daha fazla hedefleyen şınav varyasyonu.",
+          difficulty: 2
+        },
+        "Diamond Push-up": {
+          image: "Images/Exercises/Göğüs/diamond-push-up.jpg",
+          description: "Triceps ve iç göğüs kaslarını vurgulayan şınav varyasyonu.",
+          difficulty: 3
+        },
+        "Medicine Ball Push-up": {
+          image: "Images/Exercises/Göğüs/medicine-ball-push-up.jpg",
+          description: "Denge ve güç geliştiren, medicine ball üzerinde yapılan şınav.",
+          difficulty: 3
+        },
+        "Resistance Band Chest Press": {
+          image: "Images/Exercises/Göğüs/resistance-band-chest-press.jpg",
+          description: "Direnç bandı kullanarak göğüs kaslarını çalıştıran egzersiz.",
+          difficulty: 2
+        },
+        
+        // Bacak hareketleri
         "Squat": {
           image: "https://www.fizyodemi.com/wp-content/uploads/2024/07/squat-kinetik-ve-kinematigi-egzersiz-performansinda-kullanilisi-1556610860.jpg",
           description: "Bacak kaslarını çalıştıran temel bir egzersiz. Barbell veya vücut ağırlığı ile yapılabilir.",
@@ -901,10 +983,72 @@ Inherits="PersonalizedWorkoutPlanner.Program" EnableEventValidation="false" %>
           difficulty: 2
         },
         "Calf Raise": {
-          image: "https://i.ytimg.com/vi/-M4-G8p8fmc/maxresdefault.jpg",
+          image: "Images/Exercises/Bacak/calf-raise.jpg",
           description: "Baldır kaslarını çalıştıran temel bir egzersiz.",
           difficulty: 1
         },
+        "Romanian Deadlift": {
+          image: "Images/Exercises/Bacak/romanian-deadlift.jpg",
+          description: "Hamstring ve kalça kaslarını çalıştıran deadlift varyasyonu.",
+          difficulty: 3
+        },
+        "Bulgarian Split Squat": {
+          image: "Images/Exercises/Bacak/bulgarian-split-squat.jpg",
+          description: "Tek bacak squat varyasyonu, quadriceps ve gluteus kaslarını güçlendirir.",
+          difficulty: 3
+        },
+        "Hip Thrust": {
+          image: "Images/Exercises/Bacak/hip-thrust.jpg",
+          description: "Kalça kaslarını güçlendiren bir egzersiz.",
+          difficulty: 3
+        },
+        "Step Up": {
+          image: "Images/Exercises/Bacak/step-up.jpg",
+          description: "Yükseltilmiş bir platform üzerine adım atarak yapılan bacak egzersizi.",
+          difficulty: 2
+        },
+        "Goblet Squat": {
+          image: "Images/Exercises/Bacak/goblet-squad.jpg",
+          description: "Dumbbell veya kettlebell ile yapılan squat varyasyonu.",
+          difficulty: 2
+        },
+        "Front Squat": {
+          image: "Images/Exercises/Bacak/front-squat.jpg",
+          description: "Ön uyluk ve core kaslarını güçlendiren squat varyasyonu.",
+          difficulty: 3
+        },
+        "Hack Squat": {
+          image: "Images/Exercises/Bacak/hack-squat.jpg",
+          description: "Quadriceps kaslarını geliştirmek için makine üzerinde yapılan squat varyasyonu.",
+          difficulty: 3
+        },
+        "Leg Press Calf Raise": {
+          image: "Images/Exercises/Bacak/leg-press-calf-raise.jpg",
+          description: "Leg press makinesinde baldır kaslarını çalıştıran egzersiz.",
+          difficulty: 2
+        },
+        "Seated Calf Raise": {
+          image: "Images/Exercises/Bacak/seated-calf-raise.jpg",
+          description: "Baldırın soleus kasını izole eden oturarak yapılan egzersiz.",
+          difficulty: 2
+        },
+        "Walking Lunge": {
+          image: "Images/Exercises/Bacak/walking-lunge.jpg",
+          description: "İleriye doğru yürüyerek yapılan, alt vücudu çalıştıran lunge varyasyonu.",
+          difficulty: 3
+        },
+        "Box Jump": {
+          image: "Images/Exercises/Bacak/box-jump.jpg",
+          description: "Patlayıcı güç ve koordinasyon geliştiren pliometrik egzersiz.",
+          difficulty: 3
+        },
+        "Glute Bridge": {
+          image: "Images/Exercises/Bacak/glute-bridge.jpg",
+          description: "Kalça kaslarını güçlendiren egzersiz.",
+          difficulty: 2
+        },
+        
+        // Sırt hareketleri
         "Deadlift": {
           image: "https://hips.hearstapps.com/hmg-prod/images/deadlift-1651142430.jpg?crop=1.00xw:0.845xh;0,0.0510xh&resize=980:*",
           description: "Sırt, bacak ve core kaslarını çalıştıran kompleks bir egzersiz.",
@@ -930,45 +1074,296 @@ Inherits="PersonalizedWorkoutPlanner.Program" EnableEventValidation="false" %>
           description: "Sırt kaslarını çalıştıran, özel bir makinede yapılan egzersiz.",
           difficulty: 3
         },
-        "HIIT": {
-          image: "https://contents.mediadecathlon.com/p2437875/k$f4e65c9aa5a1d0bce0ebfee95cefb5a3/1920x0/2677pt2830/5354xcr5354/default.jpg?format=auto",
-          description: "Yüksek yoğunluklu interval antrenmanı. Kalp sağlığı ve yağ yakımı için etkili.",
-          difficulty: 4
+        "Face Pull": {
+          image: "Images/Exercises/Sırt/face-pull.jpg",
+          description: "Omuz arka kaslarını ve rotator cuff'ı çalıştıran kablo egzersizi.",
+          difficulty: 2
         },
-        "Burpee": {
-          image: "https://d15r0pauj874pp.cloudfront.net/files/8m3mx4kmb-BURPEE.jpg",
-          description: "Tüm vücudu çalıştıran, kardiyovasküler bir egzersiz.",
+        "Seated Cable Row": {
+          image: "Images/Exercises/Sırt/seated-cable-row.jpg",
+          description: "Orta sırt kaslarını çalıştıran kablo egzersizi.",
+          difficulty: 2
+        },
+        "Single Arm Dumbbell Row": {
+          image: "Images/Exercises/Sırt/single-arm-dumbbell-row.jpg",
+          description: "Tek kol ile yapılan, lat ve orta sırt kaslarını hedefleyen egzersiz.",
+          difficulty: 2
+        },
+        "Bent Over Row": {
+          image: "Images/Exercises/Sırt/bent-over-row.jpg",
+          description: "Eğilerek yapılan, sırt genişliğini geliştiren row hareketi.",
           difficulty: 3
         },
+        "Chin-up": {
+          image: "Images/Exercises/Sırt/chin-up.jpg",
+          description: "Biceps ve sırt kaslarını çalıştıran vücut ağırlığı egzersizi.",
+          difficulty: 3
+        },
+        "Wide Grip Pull-up": {
+          image: "Images/Exercises/Sırt/wide-grip-pulldown.jpg",
+          description: "Geniş tutuşla yapılan, lat kaslarını daha fazla hedefleyen pull-up varyasyonu.",
+          difficulty: 4
+        },
+        "Close Grip Lat Pulldown": {
+          image: "Images/Exercises/Sırt/close-grip-lat-pull-down.jpg",
+          description: "Dar tutuşla yapılan lat pulldown, orta sırt kaslarını daha fazla çalıştırır.",
+          difficulty: 2
+        },
+        "Straight Arm Pulldown": {
+          image: "Images/Exercises/Sırt/straight-arm-pulldown.jpg",
+          description: "Latissimus dorsi kaslarını izole eden kablo egzersizi.",
+          difficulty: 2
+        },
+        "Machine Row": {
+          image: "Images/Exercises/Sırt/machine-row.jpg",
+          description: "Sırt kaslarını çalıştıran oturarak yapılan makine egzersizi.",
+          difficulty: 2
+        },
+        "Inverted Row": {
+          image: "Images/Exercises/Sırt/inverted-row.jpg",
+          description: "Vücut ağırlığı ile yapılan, üst sırt ve orta trapez kaslarını çalıştıran egzersiz.",
+          difficulty: 3
+        },
+        "Rack Pull": {
+          image: "Images/Exercises/Sırt/rack-pull.jpg",
+          description: "Deadlift varyasyonu, üst sırt ve trapez kaslarını hedefler.",
+          difficulty: 3
+        },
+        "Sırt Reverse Fly": {
+          image: "Images/Exercises/Sırt/reverse-fly.jpg",
+          description: "Arka omuz ve üst sırt kaslarını çalıştıran egzersiz.",
+          difficulty: 2
+        },
+        
+        // Kardiyo hareketleri
+        "Koşu Bandı": {
+          image: "Images/Exercises/Kardiyo/kosu-bandi.jpg",
+          description: "Kapalı ortamda koşu için uygun kardiyovasküler egzersiz.",
+          difficulty: 2
+        },
+        "Bisiklet": {
+          image: "Images/Exercises/Kardiyo/bisiklet.jpg",
+          description: "Bacak kaslarını çalıştıran ve eklemlere minimum yük bindiren kardiyovasküler egzersiz.",
+          difficulty: 2
+        },
+        "İp Atlama": {
+          image: "Images/Exercises/Kardiyo/ip-atlama.jpg",
+          description: "Koordinasyon ve dayanıklılık geliştiren, yağ yakımı için etkili egzersiz.",
+          difficulty: 2
+        },
+        "Eliptik Bisiklet": {
+          image: "Images/Exercises/Kardiyo/eliptik-bisiklet.jpg",
+          description: "Eklem dostu, tam vücut kardiyovasküler çalışması sunan makine.",
+          difficulty: 2
+        },
+        "Kürek Çekme": {
+          image: "Images/Exercises/Kardiyo/kurek-cekme.jpg",
+          description: "Hem üst hem alt vücudu çalıştıran, yağ yakımı için etkili egzersiz makinesi.",
+          difficulty: 3
+        },
+        "Yüzme": {
+          image: "Images/Exercises/Kardiyo/yuzme.jpg",
+          description: "Tüm vücudu çalıştıran, eklemlere minimum yük bindiren kardiyovasküler egzersiz.",
+          difficulty: 3
+        },
+        "Stair Master": {
+          image: "Images/Exercises/Kardiyo/stairmaster.jpg",
+          description: "Merdiven tırmanışı simüle eden, alt vücut odaklı kardiyovasküler egzersiz makinesi.",
+          difficulty: 3
+        },
+        "Mountain Climber": {
+          image: "Images/Exercises/Kardiyo/mountain-climber.jpg",
+          description: "Core ve kardiyovasküler sistemi çalıştıran dinamik egzersiz.",
+          difficulty: 2
+        },
+        "Jumping Jack": {
+          image: "Images/Exercises/Kardiyo/jumping-jack.jpg",
+          description: "Kardiyovasküler kapasiteyi artıran, kollar ve bacakların koordinasyonunu sağlayan egzersiz.",
+          difficulty: 1
+        },
+        "High Knees": {
+          image: "Images/Exercises/Kardiyo/high-knees.jpg",
+          description: "Yerinde koşu hareketi, kardiyovasküler dayanıklılığı artırır ve core kaslarını çalıştırır.",
+          difficulty: 2
+        },
+        "Battle Ropes": {
+          image: "Images/Exercises/Kardiyo/battle-ropes.jpg",
+          description: "Üst vücut güç ve dayanıklılığını geliştiren yüksek yoğunluklu egzersiz.",
+          difficulty: 3
+        },
+        "Assault Bike": {
+          image: "Images/Exercises/Kardiyo/assault-bike.jpg",
+          description: "Kol ve bacakları birlikte çalıştıran, yüksek yoğunluklu kardiyovasküler egzersiz bisikleti.",
+          difficulty: 4
+        },
+        
+        // Kol hareketleri
         "Preacher Curl": {
-          image: "https://www.fitnessandbeast.com/wp-content/uploads/2016/02/Preacher-curl.jpg",
+          image: "Images/Exercises/Kol/concentration-curl.jpg",
           description: "Biceps kaslarını izole olarak çalıştıran bir egzersiz.",
           difficulty: 2
         },
+        "Barbell Curl": {
+          image: "Images/Exercises/Kol/bicep-curl.jpg",
+          description: "Biceps kaslarını çalıştıran temel egzersiz.",
+          difficulty: 2
+        },
+        "Hammer Curl": {
+          image: "Images/Exercises/Kol/hammer-curl.jpg",
+          description: "Biceps brachialis ve önkol kaslarını hedefleyen curl varyasyonu.",
+          difficulty: 2
+        },
+        "Triceps Pushdown": {
+          image: "Images/Exercises/Kol/rope-pushdown.jpg",
+          description: "Triceps kaslarını çalıştıran kablo egzersizi.",
+          difficulty: 2
+        },
+        "Skull Crusher": {
+          image: "Images/Exercises/Kol/skull-crusher.jpg",
+          description: "Lying triceps extension olarak da bilinen, triceps kaslarını geliştiren egzersiz.",
+          difficulty: 3
+        },
+        "Concentration Curl": {
+          image: "Images/Exercises/Kol/concentration-curl.jpg",
+          description: "Biceps kasını izole eden, oturarak yapılan bir egzersiz.",
+          difficulty: 2
+        },
+        "Dips": {
+          image: "Images/Exercises/Kol/dips.jpg",
+          description: "Göğüs, omuz ve triceps kaslarını çalıştıran bileşik bir hareket.",
+          difficulty: 3
+        },
+        "Overhead Tricep Extension": {
+          image: "Images/Exercises/Kol/overhead-tricep-extension.jpg",
+          description: "Triceps kaslarını geliştiren dumbbell egzersizi.",
+          difficulty: 2
+        },
+        "Rope Pushdown": {
+          image: "Images/Exercises/Kol/rope-pushdown.jpg",
+          description: "Triceps kaslarını izole eden kablo egzersizi.",
+          difficulty: 2
+        },
+        "Tricep Kickback": {
+          image: "Images/Exercises/Kol/tricep-kickback.jpg",
+          description: "Triceps kaslarını izole eden, dumbbell ile yapılan egzersiz.",
+          difficulty: 2
+        },
+        "Reverse Curl": {
+          image: "Images/Exercises/Kol/reverse-curl.jpg",
+          description: "Önkol kaslarını çalıştıran curl varyasyonu.",
+          difficulty: 2
+        },
+        "Spider Curl": {
+          image: "Images/Exercises/Kol/spider-curl.jpg",
+          description: "Biceps kaslarını maksimum şekilde izole eden, eğimli bench üzerinde yapılan curl varyasyonu.",
+          difficulty: 2
+        },
+        "Incline Dumbbell Curl": {
+          image: "Images/Exercises/Kol/incline-dumbbell-curl.jpg",
+          description: "Biceps kaslarını farklı açıdan çalıştıran, eğimli bench üzerinde yapılan curl varyasyonu.",
+          difficulty: 2
+        },
+        "21s": {
+          image: "Images/Exercises/Kol/21s.jpg",
+          description: "Biceps kaslarını yoğun şekilde çalıştıran, parçalı teknik ile yapılan curl çeşidi.",
+          difficulty: 3
+        },
+        "Zottman Curl": {
+          image: "Images/Exercises/Kol/zottman-curl.jpg",
+          description: "Biceps ve önkol kaslarını birlikte çalıştıran, rotasyonlu curl hareketi.",
+          difficulty: 3
+        },
+        "Bicep Curl": {
+          image: "Images/Exercises/Kol/bicep-curl.jpg",
+          description: "Biceps kaslarını çalıştıran temel egzersiz.",
+          difficulty: 2
+        },
+        "Cable Curl": {
+          image: "Images/Exercises/Kol/cable-curl.jpg",
+          description: "Kablo ile yapılan, sürekli direnç sağlayan biceps egzersizi.",
+          difficulty: 2
+        },
+        "Close Grip Bench Press": {
+          image: "Images/Exercises/Kol/close-grip-bench-press.jpg",
+          description: "Triceps kaslarını geliştiren, dar tutuşla yapılan bench press varyasyonu.",
+          difficulty: 3
+        },
+        
+        // Omuz hareketleri
         "Shoulder Press": {
-          image: "https://sporium.net/wp-content/uploads/2019/10/omuz-dumbell-press.jpg",
+          image: "Images/Exercises/Omuz/shoulder-press.jpg",
           description: "Omuz kaslarını çalıştıran temel bir egzersiz.",
           difficulty: 3
         },
         "Reverse Fly": {
-          image: "https://cdn.muscleandstrength.com/sites/default/files/machine-reverse-fly.jpg",
+          image: "Images/Exercises/Omuz/reverse-fly.jpg",
           description: "Omuz arka kaslarını çalıştıran bir egzersiz.",
           difficulty: 2
         },
         "Face Pull": {
-          image: "https://imagely.mirafit.co.uk/wp/wp-content/uploads/2024/12/Half-Kneeling-Face-Pull-Using-Mirafit-Cable-Pulley-Machine-1024x683.jpg",
-          description: "Omuz arka kaslarını ve rotator cuff'ı çalıştıran bir egzersiz.",
+          image: "Images/Exercises/Omuz/face-pull.jpg",
+          description: "Omuz arka kaslarını ve rotator cuff'ı çalıştıran kablo egzersizi.",
           difficulty: 2
         },
         "Upright Row": {
-          image: "https://static.nike.com/a/images/f_auto/dpr_3.0,cs_srgb/h_500,c_limit/ac1ccf6e-a321-4b78-8136-90da1c322086/try-these-upright-row-variations-experts-say.jpg",
-          description: "Omuz ve trapez kaslarını çalıştıran bir egzersiz.",
+          image: "Images/Exercises/Omuz/upright-row.jpg",
+          description: "Omuz ve trapez kaslarını çalıştıran kablo ile yapılan bir egzersiz.",
           difficulty: 2
         },
         "Arnold Press": {
-          image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTXBDSenGZqdoyZA_m1r7_eK0wf6g5C5Tn3cg&s",
+          image: "Images/Exercises/Omuz/arnold-press.jpg",
           description: "Omuz kaslarını farklı açılardan çalıştıran bir egzersiz.",
           difficulty: 3
+        },
+        "Dumbbell Shrug": {
+          image: "Images/Exercises/Omuz/dumbbell-shrug.jpg",
+          description: "Trapez kaslarını çalıştıran dumbbell egzersizi.",
+          difficulty: 2
+        },
+        "Lateral Raise": {
+          image: "Images/Exercises/Omuz/lateral-raise.jpg",
+          description: "Omuz yan deltoid kaslarını geliştiren izolasyon egzersizi.",
+          difficulty: 2
+        },
+        "Front Raise": {
+          image: "Images/Exercises/Omuz/front-raise.jpg",
+          description: "Ön deltoid kaslarını hedefleyen izolasyon egzersizi.",
+          difficulty: 2
+        },
+        "Military Press": {
+          image: "Images/Exercises/Omuz/military-press.jpg",
+          description: "Omuz ve üst sırt kaslarını geliştiren temel press hareketi.",
+          difficulty: 3
+        },
+        "Reverse Pec Deck": {
+          image: "Images/Exercises/Omuz/reverse-pec-deck.jpg",
+          description: "Arka deltoid kaslarını çalıştıran makine egzersizi.",
+          difficulty: 2
+        },
+        "Cable Lateral Raise": {
+          image: "Images/Exercises/Omuz/cable-lateral-raise.jpg",
+          description: "Kablo ile yapılan, sabit direnç sağlayan lateral raise varyasyonu.",
+          difficulty: 2
+        },
+        "Push Press": {
+          image: "Images/Exercises/Omuz/push-press.jpg",
+          description: "Bacak gücünden de yararlanarak yapılan patlayıcı omuz press egzersizi.",
+          difficulty: 3
+        },
+        "Plate Front Raise": {
+          image: "Images/Exercises/Omuz/plate-front-raise.jpg",
+          description: "Ağırlık plakası ile yapılan, ön omuz kaslarını hedefleyen egzersiz.",
+          difficulty: 2
+        },
+        "Landmine Press": {
+          image: "Images/Exercises/Omuz/landmine-press.jpg",
+          description: "Omuz kaslarını farklı bir açıdan çalıştıran barbell egzersizi.",
+          difficulty: 3
+        },
+        "Cable Upright Row": {
+          image: "Images/Exercises/Omuz/cable-upright-row.jpg",
+          description: "Omuz ve trapez kaslarını çalıştıran kablo ile yapılan bir egzersiz.",
+          difficulty: 2
         }
       };
 
@@ -1042,6 +1437,19 @@ Inherits="PersonalizedWorkoutPlanner.Program" EnableEventValidation="false" %>
           const successMessage = document.querySelector(".success-message");
           if (successMessage && successMessage.textContent.trim() !== "") {
             successMessage.style.display = "block";
+            
+            // Başarılı kayıt durumunda, haftanın günleri checkbox'larını temizle
+            if (successMessage.textContent.indexOf("başarıyla kaydedildi") !== -1) {
+              var checkboxes = document.querySelectorAll('input[type="checkbox"]');
+              for (var i = 0; i < checkboxes.length; i++) {
+                var checkbox = checkboxes[i];
+                if (checkbox.id && checkbox.id.indexOf('chk') === 0) {
+                  checkbox.checked = false;
+                }
+              }
+              console.log("Haftanın günleri checkbox'ları sıfırlandı");
+            }
+            
             setTimeout(function () {
               successMessage.style.display = "none";
             }, 5000);
@@ -1151,7 +1559,7 @@ Inherits="PersonalizedWorkoutPlanner.Program" EnableEventValidation="false" %>
               }">
                 <i class="fas fa-check"></i> Seçildi
               </div>
-              <img src="${details.image}" alt="${workoutName}" />
+              <img src="${details.image}" alt="${workoutName}" onclick="showExerciseModal('${encodeURIComponent(workoutName)}', '${encodeURIComponent(details.image)}', '${encodeURIComponent(details.description)}', ${details.difficulty})" style="cursor: pointer" />
               <div class="workout-card-body">
                 <h5 class="workout-card-title">${workoutName}</h5>
                 <p class="workout-card-text">${details.description}</p>
@@ -1329,6 +1737,39 @@ Inherits="PersonalizedWorkoutPlanner.Program" EnableEventValidation="false" %>
           return true;
         }
       });
+
+      // Egzersiz modali gösterme fonksiyonu
+      function showExerciseModal(workoutName, imageSrc, description, difficulty) {
+        try {
+          // Tıklama olayının yayılmasını durdur (kartın seçilmesini engelle)
+          event.stopPropagation();
+          
+          workoutName = decodeURIComponent(workoutName);
+          imageSrc = decodeURIComponent(imageSrc);
+          description = decodeURIComponent(description);
+          
+          // Modal içeriğini ayarla
+          document.getElementById('modalExerciseImage').src = imageSrc;
+          document.getElementById('modalExerciseTitle').textContent = workoutName;
+          document.getElementById('modalExerciseDescription').textContent = description;
+          
+          // Zorluk noktalarını ayarla
+          const dots = document.getElementById('modalDifficultyDots').children;
+          for (let i = 0; i < dots.length; i++) {
+            if (i < difficulty) {
+              dots[i].classList.add('active');
+            } else {
+              dots[i].classList.remove('active');
+            }
+          }
+          
+          // Modalı göster
+          const exerciseModal = new bootstrap.Modal(document.getElementById('exerciseImageModal'));
+          exerciseModal.show();
+        } catch (error) {
+          console.error("showExerciseModal hatası:", error);
+        }
+      }
     </script>
   </body>
 </html>

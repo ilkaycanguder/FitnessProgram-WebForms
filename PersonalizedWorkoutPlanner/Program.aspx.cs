@@ -317,6 +317,15 @@ namespace PersonalizedWorkoutPlanner
                     // Başarılı mesajı göster
                     lblMessage.Text = "Programınız başarıyla kaydedildi!";
                     lblMessage.CssClass = "success-message";
+                    
+                    // Günlerin seçimini sıfırla
+                    chkPazartesi.Checked = false;
+                    chkSali.Checked = false;
+                    chkCarsamba.Checked = false;
+                    chkPersembe.Checked = false;
+                    chkCuma.Checked = false;
+                    chkCumartesi.Checked = false;
+                    chkPazar.Checked = false;
                 }
             }
             catch (Exception ex)
