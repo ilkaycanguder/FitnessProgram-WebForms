@@ -14,23 +14,22 @@ Inherits="PersonalizedWorkoutPlanner.MyProgram" %>
 
     .program-days-row {
       display: flex;
-      flex-wrap: nowrap;
-      gap: 1.5rem;
-      justify-content: flex-start;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: center;
       margin-bottom: 2rem;
-      overflow-x: auto;
       padding-bottom: 1rem;
     }
 
     .day-section {
-      flex: 0 0 200px;
-      min-width: 200px;
-      max-width: 220px;
+      flex: 1;
+      min-width: 165px;
+      max-width: 180px;
       background: #fff;
       border-radius: 15px;
       box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
       padding: 1rem 0.5rem 0.5rem 0.5rem;
-      margin: 0;
+      margin: 0 0 1rem 0;
       display: flex;
       flex-direction: column;
       align-items: stretch;
@@ -192,7 +191,7 @@ Inherits="PersonalizedWorkoutPlanner.MyProgram" %>
       align-items: center;
       justify-content: center;
       gap: 8px;
-      margin: 0 auto 20px auto;
+      margin: 0 auto 10px auto;
       box-shadow: 0 4px 10px rgba(30, 60, 114, 0.2);
     }
     
@@ -204,14 +203,67 @@ Inherits="PersonalizedWorkoutPlanner.MyProgram" %>
     .btn-print i {
       font-size: 1.1rem;
     }
+    
+    .btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    
+    .btn-image {
+      background: linear-gradient(135deg, #2E7D32 0%, #43A047 100%);
+    }
+    
+    .btn-image:hover {
+      box-shadow: 0 8px 15px rgba(46, 125, 50, 0.3);
+    }
 
-    @media (max-width: 900px) {
+    @media (max-width: 1200px) {
       .program-days-row {
-        /* flex-direction: column; */
-        gap: 1rem;
+        gap: 0.8rem;
       }
       .day-section {
-        max-width: 200px;
+        min-width: 155px;
+        max-width: 170px;
+      }
+    }
+
+    @media (max-width: 992px) {
+      .program-days-row {
+        gap: 0.7rem;
+      }
+      .day-section {
+        min-width: 140px;
+        max-width: 160px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .program-days-row {
+        gap: 0.6rem;
+      }
+      .day-section {
+        min-width: 130px;
+        max-width: 150px;
+      }
+      .workout-name {
+        font-size: 0.9rem;
+      }
+      .workout-group {
+        font-size: 0.7rem;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .program-days-row {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      .day-section {
+        min-width: 45%;
+        max-width: 48%;
       }
     }
     
@@ -248,9 +300,15 @@ Inherits="PersonalizedWorkoutPlanner.MyProgram" %>
     <asp:Button ID="btnUpdateDay" runat="server" CssClass="d-none" OnClick="btnUpdateDay_Click" Text="Güncelle" />
 
     <asp:Panel ID="pnlPrograms" runat="server">
-      <button type="button" id="btnDownloadPDF" class="btn-print">
-        <i class="fas fa-file-pdf"></i> Programı PDF Olarak İndir
-      </button>
+      <div class="btn-group">
+        <button type="button" id="btnImageDownload" class="btn-print btn-image">
+          <i class="fas fa-image"></i> Programı Resim Olarak İndir
+        </button>
+        
+        <button type="button" id="btnDownloadPDF" class="btn-print">
+          <i class="fas fa-file-pdf"></i> Programı PDF Olarak İndir
+        </button>
+      </div>
       
       <div id="programContent" class="program-days-row">
         <!-- Pazartesi -->
@@ -738,6 +796,11 @@ Inherits="PersonalizedWorkoutPlanner.MyProgram" %>
       $("#btnDownloadPDF").click(function() {
         generatePDF();
       });
+      
+      // Resim İndirme butonu
+      $("#btnImageDownload").click(function() {
+        generateImage();
+      });
     });
 
     function onDragStart(e, el) {
@@ -817,18 +880,68 @@ Inherits="PersonalizedWorkoutPlanner.MyProgram" %>
       // PDF ayarları
       const element = document.getElementById('programContent');
       const opt = {
-        margin: [10, 10, 10, 10],
+        margin: [5, 5, 5, 5],
         filename: 'antrenman-programim.pdf',
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
+        html2canvas: { scale: 2, useCORS: true, logging: false, letterRendering: true },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
       };
+      
+      // PDF oluşturma önce kullanıcıya bilgi ver
+      $("#btnDownloadPDF").text("PDF Hazırlanıyor...").prop('disabled', true);
       
       // PDF oluştur ve indir
       html2pdf().set(opt).from(element).save().then(function() {
         // İşlem tamamlandıktan sonra gizlenen elementleri göster
         setTimeout(function() {
           $(".navbar, .footer, .btn-print, .btn-delete").removeClass("no-print");
+          $("#btnDownloadPDF").html('<i class="fas fa-file-pdf"></i> Programı PDF Olarak İndir').prop('disabled', false);
+        }, 1000);
+      });
+    }
+
+    // Resim oluşturma ve indirme fonksiyonu
+    function generateImage() {
+      // Kullanıcıya işlem yapıldığını bildir
+      $("#btnImageDownload").text("Resim Hazırlanıyor...").prop('disabled', true);
+      
+      // Navbar ve diğer yazdırılmayacak elementleri geçici olarak gizle
+      $(".navbar, .footer, .btn-print, .btn-delete, .btn-group").addClass("no-print");
+      
+      // Tüm içeriğin görünür olduğundan emin ol
+      $("#programContent").css({
+        "width": "100%",
+        "display": "flex",
+        "flex-wrap": "wrap",
+        "justify-content": "center"
+      });
+      
+      // Sayfanın programContent kısmını canvas'a dönüştür
+      html2canvas(document.getElementById("programContent"), {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        letterRendering: true,
+        allowTaint: true,
+        backgroundColor: "#ffffff"
+      }).then(function(canvas) {
+        // Canvas'ı resme dönüştür
+        var imgData = canvas.toDataURL('image/png');
+        
+        // Resmi indirmek için link oluştur
+        var link = document.createElement('a');
+        link.download = 'antrenman-programim.png';
+        link.href = imgData;
+        
+        // Link'i tıkla ve indir
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Sayfayı normal haline getir
+        setTimeout(function() {
+          $(".navbar, .footer, .btn-print, .btn-delete, .btn-group").removeClass("no-print");
+          $("#btnImageDownload").html('<i class="fas fa-image"></i> Programı Resim Olarak İndir').prop('disabled', false);
         }, 1000);
       });
     }
