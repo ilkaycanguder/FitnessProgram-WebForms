@@ -33,6 +33,15 @@ namespace PersonalizedWorkoutPlanner
                 }
 
                 LoadPrograms();
+                
+                // IsPostBack false ise, yani sayfa ilk defa yükleniyorsa
+                // Alert mesajlarının tekrarlamasını engellemek için bir script ekle
+                string script = @"
+                // Önceki mesajlar varsa temizle
+                if (window.__deleteMessageShown) {
+                    delete window.__deleteMessageShown;
+                }";
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "ClearAlerts", script, true);
             }
         }
 
@@ -63,11 +72,15 @@ namespace PersonalizedWorkoutPlanner
                         {
                             pnlNoProgram.Visible = true;
                             pnlPrograms.Visible = false;
+                            btnDeleteAllPrograms.Visible = false;
+                            btnExportWorkoutPDF.Visible = false;
                             return;
                         }
 
                         pnlNoProgram.Visible = false;
                         pnlPrograms.Visible = true;
+                        btnDeleteAllPrograms.Visible = true;
+                        btnExportWorkoutPDF.Visible = true;
 
                         // Her gün için programları filtreleme işlemi - kelime sınırlarını dikkate alan daha kesin filtreleme
                         // Her gün için ayrı bir yardımcı metot kullanarak filtreleme yapalım
@@ -278,41 +291,107 @@ namespace PersonalizedWorkoutPlanner
             }
         }
 
-        protected void btnExportPDF_Click(object sender, EventArgs e)
+        protected void btnExportWorkoutPDF_Click(object sender, EventArgs e)
         {
             try
             {
                 string conStr = ConfigurationManager.ConnectionStrings["FitnessDBConnectionString"].ConnectionString;
                 int userId = Convert.ToInt32(Session["UserId"]);
 
-                // PDF'i oluşturmak için veritabanı sorgusunu yap
-                List<ProgramData> programList = new List<ProgramData>();
+                // Veritabanından tüm programları al
+                Dictionary<string, List<ProgramData>> programsByDay = new Dictionary<string, List<ProgramData>>();
+                string[] weekDays = { "Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar" };
+                
+                // Her gün için boş bir liste oluştur
+                foreach (string day in weekDays)
+                {
+                    programsByDay[day] = new List<ProgramData>();
+                }
 
+                // Veritabanından günlere göre programları sorgula
                 using (SqlConnection conn = new SqlConnection(conStr))
                 {
-                    string query = @"SELECT Id, MuscleGroup, WorkoutName, DateCreated 
+                    string query = @"
+                        SELECT Id, MuscleGroup, WorkoutName, Days, DateCreated 
                                    FROM Programs 
                                    WHERE UserId = @UserId 
-                                   AND (@MuscleGroup = '' OR MuscleGroup = @MuscleGroup)
-                                   AND WorkoutName IS NOT NULL
-                                   ORDER BY DateCreated " + (ddlSortByDate.SelectedValue == "DESC" ? "DESC" : "ASC");
+                        ORDER BY DateCreated DESC";
 
                     SqlCommand cmd = new SqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@UserId", userId);
-                    cmd.Parameters.AddWithValue("@MuscleGroup", ddlFilterMuscleGroup.SelectedValue);
 
                     conn.Open();
                     using (SqlDataReader reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
                         {
-                            programList.Add(new ProgramData
+                            string days = reader["Days"].ToString();
+                            string muscleGroup = reader["MuscleGroup"].ToString();
+                            string workoutName = reader["WorkoutName"].ToString();
+
+                            // Koşu Bandı yazım hatasını düzelt
+                            if (workoutName.Equals("Koşu Bandı", StringComparison.OrdinalIgnoreCase) || 
+                                workoutName.Equals("Kou Band", StringComparison.OrdinalIgnoreCase) ||
+                                workoutName.Contains("Kosu Band"))
                             {
-                                Id = Convert.ToInt32(reader["Id"]),
-                                MuscleGroup = reader["MuscleGroup"].ToString(),
-                                WorkoutName = reader["WorkoutName"].ToString(),
-                                DateCreated = Convert.ToDateTime(reader["DateCreated"])
-                            });
+                                workoutName = "Kosu Bandi";
+                            }
+
+                            // İp atlama yazım düzeltmesi
+                            if (workoutName.Contains("p Atlama"))
+                            {
+                                workoutName = "Ip Atlama";
+                            }
+                            
+                            // Diğer Türkçe karakter düzeltmeleri
+                            workoutName = workoutName.Replace("ğ", "g")
+                                                    .Replace("ü", "u")
+                                                    .Replace("ş", "s")
+                                                    .Replace("ı", "i")
+                                                    .Replace("ö", "o")
+                                                    .Replace("ç", "c")
+                                                    .Replace("Ğ", "G")
+                                                    .Replace("Ü", "U")
+                                                    .Replace("Ş", "S")
+                                                    .Replace("İ", "I")
+                                                    .Replace("Ö", "O")
+                                                    .Replace("Ç", "C");
+                                                    
+                            if (muscleGroup.Contains("ğ") || muscleGroup.Contains("ö") || muscleGroup.Contains("ü") || 
+                                muscleGroup.Contains("ç") || muscleGroup.Contains("ş") || muscleGroup.Contains("ı"))
+                            {
+                                muscleGroup = muscleGroup.Replace("ğ", "g")
+                                                        .Replace("ü", "u")
+                                                        .Replace("ş", "s")
+                                                        .Replace("ı", "i")
+                                                        .Replace("ö", "o")
+                                                        .Replace("ç", "c")
+                                                        .Replace("Ğ", "G")
+                                                        .Replace("Ü", "U")
+                                                        .Replace("Ş", "S")
+                                                        .Replace("İ", "I")
+                                                        .Replace("Ö", "O")
+                                                        .Replace("Ç", "C");
+                            }
+                            
+                            int id = Convert.ToInt32(reader["Id"]);
+                            DateTime dateCreated = Convert.ToDateTime(reader["DateCreated"]);
+                            
+                            // Her bir program için, o günle eşleşiyorsa listeye ekle
+                            foreach (string day in weekDays)
+                            {
+                                if (days == day || days.StartsWith(day + ",") || days.EndsWith(", " + day) || days.Contains(", " + day + ","))
+                                {
+                                    programsByDay[day].Add(new ProgramData
+                                    {
+                                        Id = id,
+                                        MuscleGroup = muscleGroup,
+                                        WorkoutName = workoutName,
+                                        DateCreated = dateCreated,
+                                        Days = days
+                                    });
+                                }
+                            }
                         }
                     }
                 }
@@ -321,100 +400,117 @@ namespace PersonalizedWorkoutPlanner
                 byte[] pdfBytes;
                 using (MemoryStream ms = new MemoryStream())
                 {
-                    Document document = new Document(PageSize.A4, 10f, 10f, 10f, 10f);
+                    // Yatay (Landscape) format kullanımı
+                    Document document = new Document(PageSize.A4.Rotate(), 20f, 20f, 30f, 20f);
                     PdfWriter writer = PdfWriter.GetInstance(document, ms);
 
                     document.Open();
 
-                    // Basit font kullanımı
-                    Font titleFont = new Font(Font.FontFamily.HELVETICA, 16, Font.BOLD);
-                    Font headerFont = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD);
+                    // Font tanımları - standart encoding ile
+                    Font titleFont = new Font(Font.FontFamily.HELVETICA, 18, Font.BOLD);
+                    Font headerFont = new Font(Font.FontFamily.HELVETICA, 14, Font.BOLD);
+                    Font subHeaderFont = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD);
                     Font contentFont = new Font(Font.FontFamily.HELVETICA, 10);
+                    Font boldContentFont = new Font(Font.FontFamily.HELVETICA, 10, Font.BOLD);
 
                     // Başlık ekle
-                    Paragraph title = new Paragraph("Antrenman Programlarım", titleFont);
+                    Paragraph title = new Paragraph("ANTRENMAN PROGRAMIM", titleFont);
                     title.Alignment = Element.ALIGN_CENTER;
-                    title.SpacingAfter = 20f;
+                    title.SpacingAfter = 15f;
                     document.Add(title);
 
-                    // Alt başlık olarak tarih ve filtre bilgisi ekle
-                    Paragraph subtitle = new Paragraph($"Oluşturulma Tarihi: {DateTime.Now:dd.MM.yyyy HH:mm}", contentFont);
-                    subtitle.Alignment = Element.ALIGN_RIGHT;
-                    subtitle.SpacingAfter = 20f;
-                    document.Add(subtitle);
+                    // Kullanıcı bilgilerini ve tarihi ekle
+                    Paragraph dateInfo = new Paragraph($"Tarih: {DateTime.Now:dd.MM.yyyy}", contentFont);
+                    dateInfo.Alignment = Element.ALIGN_RIGHT;
+                    dateInfo.SpacingAfter = 20f;
+                    document.Add(dateInfo);
 
-                    if (!string.IsNullOrEmpty(ddlFilterMuscleGroup.SelectedValue))
+                    // Ana tablo oluştur (tüm içeriği kapsayan)
+                    PdfPTable mainTable = new PdfPTable(7); // 7 gün için
+                    mainTable.WidthPercentage = 100;
+                    mainTable.SetWidths(new float[] { 1f, 1f, 1f, 1f, 1f, 1f, 1f }); // Eşit genişlikler
+                    mainTable.HeaderRows = 1;
+
+                    // Gün başlıklarını ekle
+                    BaseColor headerBgColor = new BaseColor(30, 60, 114); // Koyu mavi
+                    BaseColor headerTextColor = BaseColor.WHITE;
+
+                    foreach (string day in weekDays)
                     {
-                        Paragraph filterInfo = new Paragraph($"Filtre: {ddlFilterMuscleGroup.SelectedItem.Text}", contentFont);
-                        filterInfo.Alignment = Element.ALIGN_RIGHT;
-                        filterInfo.SpacingAfter = 20f;
-                        document.Add(filterInfo);
+                        PdfPCell headerCell = new PdfPCell(new Phrase(day, headerFont));
+                        headerCell.BackgroundColor = headerBgColor;
+                        headerCell.HorizontalAlignment = Element.ALIGN_CENTER;
+                        headerCell.VerticalAlignment = Element.ALIGN_MIDDLE;
+                        headerCell.Padding = 10f;
+                        headerCell.BorderWidth = 1f;
+                        headerCell.BorderColor = BaseColor.WHITE;
+                        headerCell.PaddingBottom = 10f;
+                        headerCell.PaddingTop = 10f;
+                        headerCell.MinimumHeight = 40f;
+                        headerFont.Color = headerTextColor;
+                        mainTable.AddCell(headerCell);
                     }
 
-                    // Tablo oluştur
-                    PdfPTable table = new PdfPTable(3);
-                    table.WidthPercentage = 100;
-                    table.SetWidths(new float[] { 2f, 4f, 2f });
-
-                    // Tablo başlıkları
-                    PdfPCell headerCell1 = new PdfPCell(new Phrase("Kas Grubu", headerFont));
-                    headerCell1.BackgroundColor = new BaseColor(240, 244, 248);
-                    headerCell1.HorizontalAlignment = Element.ALIGN_CENTER;
-                    headerCell1.VerticalAlignment = Element.ALIGN_MIDDLE;
-                    headerCell1.Padding = 8;
-
-                    PdfPCell headerCell2 = new PdfPCell(new Phrase("Egzersiz", headerFont));
-                    headerCell2.BackgroundColor = new BaseColor(240, 244, 248);
-                    headerCell2.HorizontalAlignment = Element.ALIGN_CENTER;
-                    headerCell2.VerticalAlignment = Element.ALIGN_MIDDLE;
-                    headerCell2.Padding = 8;
-
-                    PdfPCell headerCell3 = new PdfPCell(new Phrase("Tarih", headerFont));
-                    headerCell3.BackgroundColor = new BaseColor(240, 244, 248);
-                    headerCell3.HorizontalAlignment = Element.ALIGN_CENTER;
-                    headerCell3.VerticalAlignment = Element.ALIGN_MIDDLE;
-                    headerCell3.Padding = 8;
-
-                    table.AddCell(headerCell1);
-                    table.AddCell(headerCell2);
-                    table.AddCell(headerCell3);
-
-                    // Tablo içeriği
-                    bool alternate = false;
-                    foreach (var program in programList)
+                    // Her gün için maksimum program sayısını bul
+                    int maxProgramCount = 0;
+                    foreach (string day in weekDays)
                     {
-                        PdfPCell cell1 = new PdfPCell(new Phrase(program.MuscleGroup, contentFont));
-                        PdfPCell cell2 = new PdfPCell(new Phrase(program.WorkoutName, contentFont));
-                        PdfPCell cell3 = new PdfPCell(new Phrase(program.DateCreated.ToString("dd.MM.yyyy HH:mm"), contentFont));
+                        maxProgramCount = Math.Max(maxProgramCount, programsByDay[day].Count);
+                    }
 
-                        if (alternate)
-                        {
-                            cell1.BackgroundColor = new BaseColor(248, 250, 253);
-                            cell2.BackgroundColor = new BaseColor(248, 250, 253);
-                            cell3.BackgroundColor = new BaseColor(248, 250, 253);
+                    // Gün içeriğini ekle (her günün programları)
+                    for (int i = 0; i < maxProgramCount; i++)
+                    {
+                        foreach (string day in weekDays)
+                    {
+                            PdfPCell dayCell;
+                            
+                            if (i < programsByDay[day].Count)
+                            {
+                                var program = programsByDay[day][i];
+                                
+                                // İç içe bir tablo oluştur (her program için)
+                                PdfPTable programTable = new PdfPTable(1);
+                                programTable.WidthPercentage = 100;
+                                
+                                // Egzersiz adı
+                                PdfPCell nameCell = new PdfPCell(new Phrase(program.WorkoutName, boldContentFont));
+                                nameCell.BorderWidth = 0;
+                                nameCell.HorizontalAlignment = Element.ALIGN_CENTER;
+                                nameCell.BackgroundColor = new BaseColor(240, 244, 248);
+                                nameCell.Padding = 5f;
+                                programTable.AddCell(nameCell);
+                                
+                                // Kas grubu
+                                PdfPCell muscleGroupCell = new PdfPCell(new Phrase("Kas Grubu: " + program.MuscleGroup, contentFont));
+                                muscleGroupCell.BorderWidth = 0;
+                                muscleGroupCell.PaddingLeft = 5f;
+                                muscleGroupCell.PaddingRight = 5f;
+                                programTable.AddCell(muscleGroupCell);
+                                
+                                // Ana hücre içine tablo yerleştir
+                                dayCell = new PdfPCell(programTable);
+                                dayCell.Padding = 5f;
+                            }
+                            else
+                            {
+                                // Boş hücre
+                                dayCell = new PdfPCell(new Phrase("", contentFont));
+                            }
+                            
+                            dayCell.BorderWidth = 0.5f;
+                            dayCell.BorderColor = BaseColor.LIGHT_GRAY;
+                            mainTable.AddCell(dayCell);
                         }
-
-                        cell1.Padding = 8;
-                        cell2.Padding = 8;
-                        cell3.Padding = 8;
-
-                        table.AddCell(cell1);
-                        table.AddCell(cell2);
-                        table.AddCell(cell3);
-
-                        alternate = !alternate;
                     }
 
-                    document.Add(table);
+                    document.Add(mainTable);
 
-                    // Eğer liste boş ise bilgi mesajı ekle
-                    if (programList.Count == 0)
-                    {
-                        Paragraph emptyInfo = new Paragraph("Seçilen kriterlere uygun kayıt bulunamadı.", contentFont);
-                        emptyInfo.Alignment = Element.ALIGN_CENTER;
-                        emptyInfo.SpacingBefore = 20f;
-                        document.Add(emptyInfo);
-                    }
+                    // Alt bilgi notu
+                    Paragraph footer = new Paragraph("Bu program Kisisellestirilmis Egzersiz Programi uygulamasi tarafindan olusturulmustur.", contentFont);
+                    footer.Alignment = Element.ALIGN_CENTER;
+                    footer.SpacingBefore = 20f;
+                    document.Add(footer);
 
                     document.Close();
                     writer.Close();
@@ -423,16 +519,14 @@ namespace PersonalizedWorkoutPlanner
                     pdfBytes = ms.ToArray();
                 }
 
-                // Response'u temizle ve gerekli headerleri ayarla
+                // PDF'i indirme işlemi
                 Response.Clear();
                 Response.ClearContent();
                 Response.ClearHeaders();
                 Response.ContentType = "application/pdf";
-                Response.AddHeader("Content-Disposition", "attachment; filename=Programlarim.pdf");
+                Response.AddHeader("Content-Disposition", "attachment; filename=AntrenmanProgramim.pdf");
                 Response.AddHeader("Content-Length", pdfBytes.Length.ToString());
                 Response.Buffer = true;
-
-                // PDF verilerini response stream'e yaz
                 Response.OutputStream.Write(pdfBytes, 0, pdfBytes.Length);
                 Response.End();
             }
@@ -443,8 +537,8 @@ namespace PersonalizedWorkoutPlanner
             catch (Exception ex)
             {
                 // Hata durumunda kullanıcıya bildirme
-                string errorScript = $"alert('PDF oluşturulurken bir hata oluştu: {ex.Message.Replace("'", "\\'")}');";
-                ScriptManager.RegisterStartupScript(this, this.GetType(), "PdfError", errorScript, true);
+                string errorScript = $"alert('Antrenman programı PDF'i oluşturulurken bir hata oluştu: {ex.Message.Replace("'", "\\'")}');";
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "WorkoutPdfError", errorScript, true);
             }
         }
 
@@ -459,6 +553,102 @@ namespace PersonalizedWorkoutPlanner
                 // JavaScript ile sayfayı yeniden yükle
                 string refreshScript = "setTimeout(function() { window.location.reload(); }, 500);";
                 ScriptManager.RegisterStartupScript(this, this.GetType(), "RefreshPage", refreshScript, true);
+            }
+        }
+
+        protected void btnDeleteAllPrograms_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (Session["UserId"] == null)
+                {
+                    Response.Redirect("Login.aspx");
+                    return;
+                }
+
+                // Log user and action
+                int userId = Convert.ToInt32(Session["UserId"]);
+                System.Diagnostics.Debug.WriteLine($"Attempting to delete all programs for user {userId}");
+
+                // Tüm programları sil
+                DeleteAllPrograms();
+
+                // Programları yeniden yükle (boş olacak)
+                LoadPrograms();
+
+                // Başarılı mesajı göster - sayfayı yeniden yükleme kodunu kaldırdık
+                string script = @"
+                    window.__deleteMessageShown = true;
+                    alert('Tüm programlarınız başarıyla silindi!');";
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "DeleteAllSuccess", script, true);
+            }
+            catch (SqlException sqlEx)
+            {
+                // SQL özel hata mesajı göster
+                string errorScript = $"alert('Veritabanı işlemi sırasında bir hata oluştu: {sqlEx.Message.Replace("'", "\\'")}\\nHata kodu: {sqlEx.Number}')";
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "DeleteAllSqlError", errorScript, true);
+
+                // Hata ayrıntılarını logla
+                System.Diagnostics.Debug.WriteLine($"SQL Exception in DeleteAllPrograms_Click: {sqlEx.Message}, Number: {sqlEx.Number}");
+            }
+            catch (Exception ex)
+            {
+                // Genel hata mesajı göster
+                string errorScript = $"alert('Programlar silinirken bir hata oluştu: {ex.Message.Replace("'", "\\'")}');";
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "DeleteAllError", errorScript, true);
+                
+                // Hata ayrıntılarını logla
+                System.Diagnostics.Debug.WriteLine($"Exception in DeleteAllPrograms_Click: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+            }
+        }
+
+        private void DeleteAllPrograms()
+        {
+            if (Session["UserId"] == null)
+                return;
+
+            int userId = Convert.ToInt32(Session["UserId"]);
+            string connectionString = ConfigurationManager.ConnectionStrings["FitnessDBConnectionString"].ConnectionString;
+
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                try
+                {
+                    conn.Open();
+                    
+                    // Use a transaction to ensure all deletions succeed or fail together
+                    using (SqlTransaction transaction = conn.BeginTransaction())
+                    {
+                        try
+                        {
+                            // First delete command
+                            string query = "DELETE FROM Programs WHERE UserId = @UserId";
+                            SqlCommand cmd = new SqlCommand(query, conn, transaction);
+                            cmd.Parameters.AddWithValue("@UserId", userId);
+                            cmd.CommandTimeout = 120; // Increase timeout to 2 minutes
+
+                            int rowsAffected = cmd.ExecuteNonQuery();
+                            
+                            // Commit the transaction
+                            transaction.Commit();
+                            
+                            System.Diagnostics.Debug.WriteLine($"Kullanıcı (ID: {userId}) için {rowsAffected} program silindi.");
+                        }
+                        catch (Exception ex)
+                        {
+                            // Rollback in case of error
+                            transaction.Rollback();
+                            System.Diagnostics.Debug.WriteLine($"DeleteAllPrograms transaction error: {ex.Message}");
+                            throw;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"DeleteAllPrograms connection error: {ex.Message}");
+                    throw;
+                }
             }
         }
 
@@ -515,29 +705,31 @@ namespace PersonalizedWorkoutPlanner
                 {
                     conn.Open();
 
-                    // Önce mevcut günü alın
+                    // Önce mevcut günleri alın
                     string getOldDayQuery = "SELECT Days FROM Programs WHERE Id = @Id AND UserId = @UserId";
                     SqlCommand getOldDayCmd = new SqlCommand(getOldDayQuery, conn);
                     getOldDayCmd.Parameters.AddWithValue("@Id", workoutId);
                     getOldDayCmd.Parameters.AddWithValue("@UserId", userId);
 
-                    string oldDay = getOldDayCmd.ExecuteScalar()?.ToString();
+                    string oldDaysStr = getOldDayCmd.ExecuteScalar()?.ToString();
 
-                    // Eğer aynı günse işlem yapmaya gerek yok
-                    if (oldDay == newDay)
+                    // Eğer yeni gün, günlerden biri ise işlem yapmaya gerek yok
+                    if (oldDaysStr == newDay)
                     {
                         System.Diagnostics.Debug.WriteLine("Gün zaten aynı, değişiklik yapılmadı");
                         return;
                     }
 
-                    // Yeni gün ataması yap - eski günü tamamen kaldır ve yeni günü ekle
-                    // Bu şekilde "Cuma" yerine "Cumartesi" gibi kısmi eşleşme sorunlarını önleriz
-                    System.Diagnostics.Debug.WriteLine($"Eski gün: '{oldDay}', Yeni gün: '{newDay}'");
+                    // Yeni günü ayarla - sürükleme işlemi çoklu günleri desteklemeli
+                    // Mevcut programda birden fazla gün olabilir, o yüzden sadece günü değiştiriyoruz
+                    string updatedDay = newDay;
+
+                    System.Diagnostics.Debug.WriteLine($"Eski günler: '{oldDaysStr}', Yeni gün: '{updatedDay}'");
 
                     // Günü değiştir
                     string query = "UPDATE Programs SET Days = @Days WHERE Id = @Id AND UserId = @UserId";
                     SqlCommand cmd = new SqlCommand(query, conn);
-                    cmd.Parameters.AddWithValue("@Days", newDay);
+                    cmd.Parameters.AddWithValue("@Days", updatedDay);
                     cmd.Parameters.AddWithValue("@Id", workoutId);
                     cmd.Parameters.AddWithValue("@UserId", userId);
 
@@ -569,5 +761,6 @@ namespace PersonalizedWorkoutPlanner
         public string MuscleGroup { get; set; }
         public string WorkoutName { get; set; }
         public DateTime DateCreated { get; set; }
+        public string Days { get; set; }
     }
 }

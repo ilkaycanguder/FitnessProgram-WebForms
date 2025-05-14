@@ -4,6 +4,7 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using System.Web.Security;
 
 namespace PersonalizedWorkoutPlanner
 {
@@ -24,6 +25,9 @@ namespace PersonalizedWorkoutPlanner
             Response.Cache.SetCacheability(HttpCacheability.NoCache);
             Response.Cache.SetExpires(DateTime.UtcNow.AddHours(-1));
             Response.Cache.SetNoStore();
+            
+            // Forms Authentication sign out
+            FormsAuthentication.SignOut();
             
             // Redirect to login page
             Response.Redirect("Login.aspx");

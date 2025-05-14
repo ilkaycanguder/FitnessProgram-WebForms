@@ -5,26 +5,27 @@ Inherits="PersonalizedWorkoutPlanner.MyProgram" %>
 <asp:Content ID="BodyContent" ContentPlaceHolderID="MainContent" runat="server">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <!-- HTML to PDF Kütüphanesi -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     .program-container {
-      margin-top: 2rem;
+      margin-top: 1.5rem;
+      max-width: 100%;
+      width: 100%;
+      padding: 0;
     }
 
     .program-days-row {
       display: flex;
       flex-wrap: wrap;
-      gap: 1rem;
+      gap: 0.4rem;
       justify-content: center;
-      margin-bottom: 2rem;
+      margin-bottom: 1.5rem;
       padding-bottom: 1rem;
     }
 
     .day-section {
       flex: 1;
-      min-width: 165px;
-      max-width: 180px;
+      min-width: 170px;
+      max-width: 210px;
       background: #fff;
       border-radius: 15px;
       box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
@@ -43,6 +44,7 @@ Inherits="PersonalizedWorkoutPlanner.MyProgram" %>
       text-align: center;
       border-bottom: 2px solid #1e3c72;
       padding-bottom: 0.3rem;
+      white-space: nowrap;
     }
 
     .program-card {
@@ -178,120 +180,78 @@ Inherits="PersonalizedWorkoutPlanner.MyProgram" %>
       color: #c0392b;
     }
 
-    .btn-print {
-      background: linear-gradient(135deg, #2E7D32 0%, #43A047 100%);
+    .btn-delete-all {
+      background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
       color: white;
       border: none;
-      border-radius: 8px;
-      padding: 10px 20px;
-      font-size: 0.9rem;
-      cursor: pointer;
+      border-radius: 50px;
+      padding: 0.7rem 2rem;
+      font-size: 1rem;
+      font-weight: 600;
       transition: all 0.3s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      margin: 0 auto 20px auto;
-      box-shadow: 0 4px 10px rgba(46, 125, 50, 0.2);
+      box-shadow: 0 4px 15px rgba(231, 76, 60, 0.2);
+      margin: 0.5rem 0;
     }
     
-    .btn-print:hover {
+    .btn-delete-all:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 15px rgba(46, 125, 50, 0.3);
-    }
-    
-    .btn-print i {
-      font-size: 1.1rem;
-    }
-    
-    .btn-print:disabled {
-      opacity: 0.7;
-      cursor: not-allowed;
-      transform: none;
-    }
-    
-    .loading-spinner {
-      display: inline-block;
-      width: 20px;
-      height: 20px;
-      border: 3px solid rgba(255,255,255,.3);
-      border-radius: 50%;
-      border-top-color: #fff;
-      animation: spin 1s ease-in-out infinite;
-      margin-right: 8px;
-    }
-    
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-    
-    #captureResult {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      padding: 10px 15px;
-      background-color: #4CAF50;
+      box-shadow: 0 7px 20px rgba(231, 76, 60, 0.3);
+      background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%);
       color: white;
-      border-radius: 4px;
-      z-index: 9999;
-      display: none;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
     }
     
-    #captureContainer {
-      position: absolute;
-      top: -9999px;
-      left: -9999px;
-      width: 1200px;
-      background-color: white;
-      padding: 20px;
-      z-index: -1;
-      visibility: hidden;
+    .btn-delete-all i {
+      margin-right: 0.5rem;
+    }
+
+    .btn-pdf-export {
+      background: linear-gradient(135deg, #1565C0 0%, #0D47A1 100%);
+      color: white;
+      border: none;
+      border-radius: 50px;
+      padding: 0.7rem 2rem;
+      font-size: 1rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(21, 101, 192, 0.2);
+      margin: 0.5rem 0.5rem;
     }
     
-    .btn-group {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-    
-    .btn-image {
-      background: linear-gradient(135deg, #2E7D32 0%, #43A047 100%);
-    }
-    
-    .btn-image:hover {
-      box-shadow: 0 8px 15px rgba(46, 125, 50, 0.3);
+    .btn-pdf-export:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 7px 20px rgba(21, 101, 192, 0.3);
+      background: linear-gradient(135deg, #0D47A1 0%, #1565C0 100%);
+      color: white;
     }
 
     @media (max-width: 1200px) {
       .program-days-row {
-        gap: 0.8rem;
+        gap: 0.3rem;
       }
       .day-section {
-        min-width: 155px;
-        max-width: 170px;
+        min-width: 160px;
+        max-width: 200px;
       }
     }
 
     @media (max-width: 992px) {
       .program-days-row {
-        gap: 0.7rem;
+        gap: 0.3rem;
       }
       .day-section {
-        min-width: 140px;
-        max-width: 160px;
+        min-width: 150px;
+        max-width: 190px;
       }
     }
 
     @media (max-width: 768px) {
       .program-days-row {
-        gap: 0.6rem;
+        gap: 0.2rem;
       }
       .day-section {
-        min-width: 130px;
-        max-width: 150px;
+        min-width: 140px;
+        max-width: 180px;
+        padding: 0.8rem 0.4rem 0.4rem 0.4rem;
       }
       .workout-name {
         font-size: 0.9rem;
@@ -319,11 +279,35 @@ Inherits="PersonalizedWorkoutPlanner.MyProgram" %>
     }
   </style>
 
-  <div class="container program-container">
-    <h1 class="text-center mb-4" style="display: flex; align-items: center; justify-content: center; gap: 0.7rem;">
+  <div class="container-fluid program-container">
+    <h1 class="text-center mb-3" style="display: flex; align-items: center; justify-content: center; gap: 0.7rem;">
       Programlarım
       <i class="fas fa-dumbbell" style="font-size: 2rem; color: #1e3c72;"></i>
     </h1>
+    
+    <!-- İşlem Butonları -->
+    <div class="text-center mb-4">
+      <!-- PDF İndir Butonu -->
+      <asp:Button 
+        ID="btnExportWorkoutPDF" 
+        runat="server" 
+        Text="PDF Olarak İndir" 
+        CssClass="btn-pdf-export" 
+        OnClick="btnExportWorkoutPDF_Click"
+        Visible="false"
+      />
+      
+      <!-- Tüm Programları Silme Butonu -->
+      <asp:Button 
+        ID="btnDeleteAllPrograms" 
+        runat="server" 
+        Text="&#9888; Tüm Programları Sil" 
+        CssClass="btn-delete-all" 
+        OnClientClick="return confirmDeleteAll();" 
+        OnClick="btnDeleteAllPrograms_Click"
+        Visible="false"
+      />
+    </div>
 
     <asp:Panel
       ID="pnlNoProgram"
@@ -345,12 +329,6 @@ Inherits="PersonalizedWorkoutPlanner.MyProgram" %>
     <asp:Button ID="btnUpdateDay" runat="server" CssClass="d-none" OnClick="btnUpdateDay_Click" Text="Güncelle" />
 
     <asp:Panel ID="pnlPrograms" runat="server">
-      <div id="captureResult"></div>
-      <div id="captureContainer"></div>
-      <button type="button" id="btnImageDownload" class="btn-print">
-        <i class="fas fa-image"></i> Programı Resim Olarak İndir
-      </button>
-      
       <div id="programContent" class="program-days-row">
         <!-- Pazartesi -->
         <div
@@ -832,11 +810,6 @@ Inherits="PersonalizedWorkoutPlanner.MyProgram" %>
     // Sayfa yüklendiğinde çalışacak kod
     $(document).ready(function() {
       console.log("Sayfa yüklendi ve hazır");
-      
-      // Resim İndirme butonu
-      $("#btnImageDownload").click(function() {
-        captureAndDownload();
-      });
     });
 
     function onDragStart(e, el) {
@@ -892,6 +865,11 @@ Inherits="PersonalizedWorkoutPlanner.MyProgram" %>
       return false;
     }
     
+    // Tüm programları silme onayı
+    function confirmDeleteAll() {
+      return confirm('DİKKAT: Tüm antrenman programlarınız silinecek. Bu işlem geri alınamaz! Devam etmek istediğinize emin misiniz?');
+    }
+    
     // Tüm silme butonlarına click event listener ekle
     $(document).ready(function() {
       $('.btn-delete').each(function() {
@@ -907,100 +885,5 @@ Inherits="PersonalizedWorkoutPlanner.MyProgram" %>
         };
       });
     });
-
-    // Resim oluşturma ve indirme fonksiyonu
-    function captureAndDownload() {
-      // Kullanıcıya işlem yapıldığını bildir
-      const btn = $("#btnImageDownload");
-      btn.html('<span class="loading-spinner"></span> Resim Hazırlanıyor...').prop('disabled', true);
-      
-      // Hata gösterge elementi
-      const resultElement = $("#captureResult");
-      
-      try {
-        // Yakalama için görünmez container
-        const captureContainer = document.getElementById('captureContainer');
-        
-        // Önce içeriği temizle
-        $(captureContainer).empty();
-        
-        // Programları içeren div'i klonla
-        const originalContent = document.getElementById('programContent');
-        const clonedContent = originalContent.cloneNode(true);
-        
-        // Klonlanmış içeriğin ID'sini değiştir
-        clonedContent.id = 'clonedContent';
-        
-        // Klonlanmış içeriği görünmez konteyner'a ekle
-        captureContainer.appendChild(clonedContent);
-        
-        // Klonlanmış içeriğin düzgün görünmesi için CSS ayarları
-        $(clonedContent).css({
-          'display': 'flex',
-          'flex-wrap': 'wrap',
-          'justify-content': 'center',
-          'gap': '1rem',
-          'width': '1200px',
-          'background-color': '#fff',
-          'padding': '20px',
-          'box-sizing': 'border-box'
-        });
-        
-        // Delete butonlarını gizle
-        $(clonedContent).find('.btn-delete').remove();
-        
-        // HTML2Canvas ile görüntü oluştur
-        html2canvas(captureContainer, {
-          scale: 1,
-          useCORS: true,
-          allowTaint: true,
-          backgroundColor: "#ffffff",
-          logging: false,
-          letterRendering: true
-        }).then(function(canvas) {
-          // Canvas'ı resme dönüştür
-          try {
-            // Canvas'ı resim verisine dönüştür
-            const imgData = canvas.toDataURL('image/png');
-            
-            // Resmi indirmek için link oluştur
-            const link = document.createElement('a');
-            link.download = 'antrenman-programim.png';
-            link.href = imgData;
-            
-            // Link'i tıkla ve indir
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            // Başarı mesajı göster
-            resultElement.text("Program resmi başarıyla indirildi!").css("background-color", "#4CAF50").fadeIn().delay(3000).fadeOut();
-            
-            console.log("Image downloaded successfully");
-          } catch (error) {
-            console.error("Error converting canvas to image: ", error);
-            resultElement.text("Resim oluşturulurken hata: " + error.message).css("background-color", "#F44336").fadeIn().delay(3000).fadeOut();
-          }
-          
-          // İşlem tamamlandıktan sonra temizlik
-          $(captureContainer).empty();
-          btn.html('<i class="fas fa-image"></i> Programı Resim Olarak İndir').prop('disabled', false);
-          
-        }).catch(function(error) {
-          console.error("Error creating canvas: ", error);
-          resultElement.text("Canvas oluşturulurken hata: " + error.message).css("background-color", "#F44336").fadeIn().delay(3000).fadeOut();
-          
-          // Hata durumunda buton ve içeriği normal durumuna getir
-          $(captureContainer).empty();
-          btn.html('<i class="fas fa-image"></i> Programı Resim Olarak İndir').prop('disabled', false);
-        });
-      } catch (error) {
-        console.error("General error in capture function: ", error);
-        resultElement.text("Beklenmeyen hata: " + error.message).css("background-color", "#F44336").fadeIn().delay(3000).fadeOut();
-        
-        // Hata durumunda buton ve içeriği normal durumuna getir
-        btn.html('<i class="fas fa-image"></i> Programı Resim Olarak İndir').prop('disabled', false);
-      }
-    }
   </script>
 </asp:Content>

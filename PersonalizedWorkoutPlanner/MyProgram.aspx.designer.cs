@@ -24,6 +24,15 @@ namespace PersonalizedWorkoutPlanner
         protected global::System.Web.UI.HtmlControls.HtmlForm form1;
 
         /// <summary>
+        /// btnDeleteAllPrograms control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnDeleteAllPrograms;
+
+        /// <summary>
         /// pnlNoProgram control.
         /// </summary>
         /// <remarks>
@@ -229,5 +238,14 @@ namespace PersonalizedWorkoutPlanner
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Literal litMuscleGroups;
+
+        /// <summary>
+        /// btnExportWorkoutPDF control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnExportWorkoutPDF;
     }
 }

@@ -648,6 +648,15 @@ Inherits="PersonalizedWorkoutPlanner.Program" EnableEventValidation="false" %>
         border-color: #bcd0f7;
         box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
       }
+      
+      /* Style for active day state */
+      .weekday-label.active-day {
+        background: var(--gradient-accent);
+        color: white;
+        border-color: transparent;
+        box-shadow: 0 8px 15px rgba(157, 78, 221, 0.25);
+        transform: translateY(-3px);
+      }
 
       .weekday-label .day-abbr {
         display: none;
@@ -846,7 +855,7 @@ Inherits="PersonalizedWorkoutPlanner.Program" EnableEventValidation="false" %>
         </div>
 
         <div class="form-group">
-          <label class="form-label">Haftanın Günleri</label>
+          <label class="form-label">Haftanın Günleri <small>(Birden fazla gün seçebilirsiniz)</small></label>
           <div class="weekday-container">
             <div class="weekday-item">
               <asp:CheckBox 
@@ -1602,10 +1611,63 @@ Inherits="PersonalizedWorkoutPlanner.Program" EnableEventValidation="false" %>
               selectMuscleGroup(this, value);
             });
           });
+          
+          // Haftanın günleri için tıklama olayları ekle
+          setupWeekdayButtons();
+          
         } catch (error) {
           console.error("DOMContentLoaded hatası:", error);
         }
       });
+      
+      // Haftanın günleri butonları için işlevsellik
+      function setupWeekdayButtons() {
+        // Tüm gün etiketlerine tıklama olayı ekle
+        document.querySelectorAll(".weekday-label").forEach(function(label) {
+          label.addEventListener("click", function(e) {
+            // Label'a tıklandığında, ilgili checkbox'ı bul
+            const checkboxId = this.getAttribute("for");
+            const checkbox = document.getElementById(checkboxId);
+            
+            if (checkbox) {
+              // Checkbox durumunu değiştir (çoklu seçim için toggle)
+              checkbox.checked = !checkbox.checked;
+              
+              // Seçili güne göre görsel stil değişikliği
+              if (checkbox.checked) {
+                this.style.background = "var(--gradient-accent)";
+                this.style.color = "white";
+                this.style.borderColor = "transparent";
+                this.style.boxShadow = "0 8px 15px rgba(157, 78, 221, 0.25)";
+                this.style.transform = "translateY(-3px)";
+              } else {
+                this.style.background = "#f8fafd";
+                this.style.color = "var(--primary-color)";
+                this.style.borderColor = "#e1e8f3";
+                this.style.boxShadow = "0 4px 10px rgba(0, 0, 0, 0.05)";
+                this.style.transform = "none";
+              }
+            }
+            
+            // Default davranışı engelle
+            e.preventDefault();
+          });
+        });
+        
+        // Başlangıçta seçili olan günlerin stilini ayarla
+        document.querySelectorAll(".weekday-checkbox").forEach(function(checkbox) {
+          if (checkbox.checked) {
+            const label = document.querySelector(`label[for="${checkbox.id}"]`);
+            if (label) {
+              label.style.background = "var(--gradient-accent)";
+              label.style.color = "white";
+              label.style.borderColor = "transparent";
+              label.style.boxShadow = "0 8px 15px rgba(157, 78, 221, 0.25)";
+              label.style.transform = "translateY(-3px)";
+            }
+          }
+        });
+      }
 
       // Populate the ListBox with all exercises initially (hidden from user)
       function populateWorkoutsListBox() {
