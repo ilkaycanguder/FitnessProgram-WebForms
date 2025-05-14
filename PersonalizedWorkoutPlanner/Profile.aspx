@@ -1,11 +1,12 @@
 <%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Profile.aspx.cs"
-Inherits="PersonalizedWorkoutPlanner.Profile" %>
+Inherits="PersonalizedWorkoutPlanner.Profile" EnableViewState="true" %>
 
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head runat="server">
     <meta charset="utf-8" />
-    <title>Profil - Kişiselleştirilmiş Egzersiz Planlayıcı</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Profil - Kisisellestirilmis Egzersiz Planlayici</title>
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
       rel="stylesheet"
@@ -15,6 +16,7 @@ Inherits="PersonalizedWorkoutPlanner.Profile" %>
       rel="stylesheet"
     />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.5/gsap.min.js"></script>
     <style>
       body {
         background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
@@ -294,6 +296,205 @@ Inherits="PersonalizedWorkoutPlanner.Profile" %>
         color: #721c24 !important;
       }
 
+      /* BMI Kart Stilleri */
+      .bmi-card {
+        margin-top: 2rem;
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        animation: fadeIn 0.5s ease;
+        overflow: hidden;
+      }
+
+      .bmi-card h3 {
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        text-align: center;
+        color: #2c3e50;
+      }
+
+      .bmi-result {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+      }
+
+      .bmi-value {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #1e3c72;
+        line-height: 1;
+        transition: all 0.5s ease;
+        transform: scale(1);
+      }
+
+      .bmi-value.animate {
+        transform: scale(1.2);
+        color: #e74c3c;
+      }
+
+      .bmi-category {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 0.5rem 1rem;
+        font-weight: 600;
+        display: inline-block;
+        margin-left: 1rem;
+        transition: all 0.5s ease;
+        transform: translateX(0);
+      }
+
+      .bmi-category.animate {
+        transform: translateX(10px);
+      }
+
+      .bmi-details {
+        text-align: center;
+        margin-top: 0.5rem;
+        font-size: 0.9rem;
+        color: #7f8c8d;
+        margin-bottom: 1rem;
+      }
+
+      /* BMI Progress Bar */
+      .bmi-progress {
+        height: 1.25rem;
+        margin-top: 1.5rem;
+        border-radius: 10px;
+        overflow: hidden;
+        background: #ecf0f1;
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+        position: relative;
+      }
+
+      .bmi-progress-bar {
+        height: 100% !important;
+        border-radius: 10px;
+        background: linear-gradient(
+          90deg,
+          #2ecc71,
+          #f1c40f,
+          #e74c3c
+        ) !important;
+        position: relative;
+        width: 0%; /* Başlangıç değeri - JavaScript tarafından değiştirilecek */
+        min-width: 0; /* Minimum genişlik 0 olacak */
+        will-change: width, background-color; /* Tarayıcıya optimize etme ipucu */
+        transition: none !important; /* CSS animasyonlarını devre dışı bırak */
+        display: block !important;
+        visibility: visible !important;
+      }
+
+      .bmi-indicator {
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background-color: white;
+        border: 3px solid #1e3c72;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        margin-top: -2px;
+        z-index: 10;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        left: 0%; /* Başlangıç değeri - JavaScript tarafından değiştirilecek */
+        will-change: left, border-color; /* Tarayıcıya optimize etme ipucu */
+        transition: none !important; /* CSS animasyonlarını devre dışı bırak */
+      }
+
+      .bmi-indicator::after {
+        content: attr(data-value);
+        position: absolute;
+        top: -30px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #1e3c72;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 5px;
+        font-size: 12px;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
+        white-space: nowrap;
+      }
+
+      .bmi-indicator:hover::after {
+        opacity: 1;
+      }
+
+      .bmi-scale {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 0.5rem;
+        font-size: 0.8rem;
+        color: #7f8c8d;
+      }
+
+      .bmi-scale-item {
+        position: relative;
+        text-align: center;
+      }
+
+      .bmi-scale-item::before {
+        content: "";
+        position: absolute;
+        top: -8px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 1px;
+        height: 6px;
+        background: #bdc3c7;
+      }
+
+      /* Özel BMI Animasyonları */
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+      }
+
+      .pulse-animation {
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes slideIn {
+        from {
+          transform: translateX(-100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+
+      .slide-in {
+        animation: slideIn 0.8s ease forwards;
+      }
+
+      @keyframes fadeScale {
+        from {
+          opacity: 0;
+          transform: scale(0.8);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+
+      .fade-scale {
+        animation: fadeScale 0.5s ease forwards;
+      }
+
       /* Animations */
       @keyframes fadeIn {
         from {
@@ -338,7 +539,8 @@ Inherits="PersonalizedWorkoutPlanner.Profile" %>
     </style>
   </head>
   <body>
-    <form id="form1" runat="server">
+    <form id="formProfile" runat="server">
+      <asp:ScriptManager ID="ScriptManager1" runat="server" />
       <div class="profile-wrapper">
         <div class="profile-sidebar">
           <div class="sidebar-content">
@@ -423,7 +625,7 @@ Inherits="PersonalizedWorkoutPlanner.Profile" %>
                 runat="server"
                 CssClass="form-select"
               >
-                <asp:ListItem Text="-- Hedef Seçin --" Value="" />
+                <asp:ListItem Text="-- Hedef Secin --" Value="" />
                 <asp:ListItem Text="Kas Yap" Value="Kas Yap" />
                 <asp:ListItem Text="Kilo Ver" Value="Kilo Ver" />
                 <asp:ListItem Text="Fit Kal" Value="Fit Kal" />
@@ -437,7 +639,7 @@ Inherits="PersonalizedWorkoutPlanner.Profile" %>
               runat="server"
               ControlToValidate="ddlGoal"
               InitialValue=""
-              ErrorMessage="Lütfen bir hedef seçin."
+              ErrorMessage="Lutfen bir hedef secin."
               CssClass="validation-error"
               Display="Dynamic"
             />
@@ -456,20 +658,93 @@ Inherits="PersonalizedWorkoutPlanner.Profile" %>
             runat="server"
             CssClass="success-message"
           />
+
+          <!-- BMI Kart Bölümü -->
+          <asp:Panel ID="pnlBMI" runat="server" CssClass="bmi-card">
+            <h3>Vucut Kitle Indeksi (BMI)</h3>
+
+            <div class="bmi-result">
+              <div class="bmi-value" id="bmiValue">
+                <asp:Literal ID="litBMIValue" runat="server"></asp:Literal>
+              </div>
+              <asp:Panel
+                ID="pnlCategory"
+                runat="server"
+                CssClass="bmi-category"
+                ClientIDMode="Static"
+              >
+                <asp:Literal ID="litBMICategory" runat="server"></asp:Literal>
+              </asp:Panel>
+            </div>
+
+            <div class="bmi-details">
+              Boy: <asp:Literal ID="litHeight" runat="server"></asp:Literal> cm
+              | Kilo:
+              <asp:Literal ID="litWeight" runat="server"></asp:Literal> kg
+            </div>
+
+            <!-- BMI Çubuğu -->
+            <div class="bmi-progress" id="bmiProgress">
+              <!-- Progress Bar - Inline style attributu sunucu tarafından ayarlanacak -->
+              <asp:Panel
+                ID="pnlProgressBar"
+                runat="server"
+                CssClass="bmi-progress-bar"
+                ClientIDMode="Static"
+                style="width: 0%; height: 100%"
+              ></asp:Panel>
+
+              <!-- BMI Göstergesi -->
+              <div class="bmi-indicator" id="bmiIndicator" data-value=""></div>
+            </div>
+
+            <div class="bmi-scale">
+              <div class="bmi-scale-item">18.5</div>
+              <div class="bmi-scale-item">25</div>
+              <div class="bmi-scale-item">30</div>
+            </div>
+
+            <div class="bmi-scale">
+              <div class="bmi-scale-item">Zayif</div>
+              <div class="bmi-scale-item">Normal</div>
+              <div class="bmi-scale-item">Fazla Kilolu</div>
+              <div class="bmi-scale-item">Obez</div>
+            </div>
+          </asp:Panel>
         </div>
       </div>
     </form>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+      // BMI değerleri için global değişkenler
+      var currentBMI = 0;
+      var currentBMICategory = "";
+      var currentBMIColor = "";
+      var currentBMIPosition = 0;
+
       document.addEventListener("DOMContentLoaded", function () {
+        // Sayfa yüklendiğinde server tarafından gelen BMI değerlerini alalım
+        currentBMI = parseFloat(
+          '<%= CalculatedBMI.ToString("F1").Replace(",", ".") %>'
+        );
+        currentBMICategory = "<%= BMICategory %>";
+        currentBMIColor = "<%= BMIColor %>";
+        currentBMIPosition = parseInt("<%= BMIPosition %>");
+
+        console.log("DOM loaded. BMI values:", {
+          bmi: currentBMI,
+          category: currentBMICategory,
+          position: currentBMIPosition,
+        });
+
         const successMessage = document.getElementById(
           "<%= lblMessage.ClientID %>"
         );
         if (successMessage && successMessage.textContent.trim() !== "") {
           successMessage.classList.add("show");
 
-          // Hide message after 5 seconds
+          // 5 saniye sonra mesajı gizle
           setTimeout(function () {
             successMessage.classList.remove("show");
           }, 5000);
@@ -478,26 +753,332 @@ Inherits="PersonalizedWorkoutPlanner.Profile" %>
         var updateBtn = document.getElementById("<%= btnUpdate.ClientID %>");
         if (updateBtn) {
           updateBtn.onclick = function (e) {
+            // Doğrulama kontrollerini kontrol et
+            var isValid = true;
+            var validators = Page_Validators;
+
+            for (var i = 0; i < validators.length; i++) {
+              if (!validators[i].isvalid) {
+                isValid = false;
+                break;
+              }
+            }
+
+            if (!isValid) {
+              return true; // Normal validasyon hataları gösterilsin
+            }
+
             e.preventDefault();
+
             Swal.fire({
               title: "Emin misiniz?",
-              text: "Değişiklikleri kaydetmek istediğinize emin misiniz?",
+              text: "Degisiklikleri kaydetmek istediginize emin misiniz?",
               icon: "question",
               showCancelButton: true,
               confirmButtonColor: "#3085d6",
               cancelButtonColor: "#d33",
-              confirmButtonText: "Evet, güncelle!",
-              cancelButtonText: "Vazgeç",
+              confirmButtonText: "Evet, guncelle!",
+              cancelButtonText: "Vazgec",
             }).then((result) => {
               if (result.isConfirmed) {
-                // Formu manuel olarak submit et
-                document.getElementById("<%= form1.ClientID %>").submit();
+                // Doğrudan __doPostBack fonksiyonunu kullanarak ASP.NET postback'i yap
+                __doPostBack("<%= btnUpdate.UniqueID %>", "");
               }
             });
             return false;
           };
         }
+
+        // Sayfa yüklendiğinde BMI kartı varsa animasyonu başlat
+        const bmiCard = document.getElementById("<%= pnlBMI.ClientID %>");
+        if (bmiCard && window.getComputedStyle(bmiCard).display !== "none") {
+          console.log("BMI card is visible, animation will start soon.");
+
+          // BMI elementlerini hemen ayarla
+          let bmiProgressBar = document.getElementById("pnlProgressBar");
+          let bmiIndicator = document.getElementById("bmiIndicator");
+
+          if (bmiProgressBar && currentBMIPosition > 0) {
+            console.log(
+              "Setting initial BMI progress bar: " + currentBMIPosition + "%"
+            );
+            bmiProgressBar.style.cssText =
+              "width: " +
+              currentBMIPosition +
+              "% !important; background-color: " +
+              currentBMIColor +
+              " !important; height: 100% !important; display: block !important; visibility: visible !important; transition: none !important;";
+          }
+
+          if (bmiIndicator && currentBMIPosition > 0) {
+            bmiIndicator.style.left = currentBMIPosition + "%";
+            bmiIndicator.style.borderColor = currentBMIColor;
+            bmiIndicator.setAttribute(
+              "data-value",
+              currentBMI + " - " + currentBMICategory
+            );
+          }
+        }
+
+        // Elementleri doğrudan yakalamayı dene
+        updateBMIIndicator();
       });
+
+      // BMI göstergesini güncelle ve animasyonu başlat
+      function animateBMI(isUpdate, oldBMI, newBMI) {
+        console.log(
+          "animateBMI fonksiyonu cagrildi:",
+          isUpdate,
+          oldBMI,
+          newBMI
+        );
+
+        // DOM elementlerini al
+        var bmiValue = document.getElementById("bmiValue");
+        var bmiCategory = document.getElementById("pnlCategory");
+        var bmiProgressBar = document.getElementById("pnlProgressBar");
+        var bmiIndicator = document.getElementById("bmiIndicator");
+
+        // Global değerleri logla
+        console.log("Global BMI degerleri:", {
+          currentBMI: currentBMI,
+          currentBMICategory: currentBMICategory,
+          currentBMIColor: currentBMIColor,
+          currentBMIPosition: currentBMIPosition,
+        });
+
+        if (!bmiProgressBar || !bmiIndicator) {
+          console.error("BMI elementleri bulunamadı!");
+          // Elementleri querySelector ile de bulmaya çalış
+          if (!bmiProgressBar)
+            bmiProgressBar = document.querySelector(".bmi-progress-bar");
+          if (!bmiIndicator)
+            bmiIndicator = document.querySelector(".bmi-indicator");
+          if (!bmiProgressBar || !bmiIndicator) return;
+        }
+
+        // Pozisyon belirle - Global değişkenlerden al veya parametrelerden hesapla
+        var newPosition = currentBMIPosition;
+        var color = currentBMIColor;
+        var bmiValueToUse = currentBMI;
+        var categoryToUse = currentBMICategory;
+
+        // Eğer animasyon güncelleme ise ve yeni BMI değeri varsa, bu değeri kullan
+        if (isUpdate && newBMI > 0) {
+          bmiValueToUse = newBMI;
+        }
+
+        // Değerler 0 veya boş ise sorun gider
+        if (newPosition <= 0 || !color || bmiValueToUse <= 0) {
+          console.warn(
+            "Deger hatasi tespit edildi, manuel hesaplama yapiliyor..."
+          );
+
+          // BMI değerini kullanarak pozisyonu manuel hesapla
+          if (bmiValueToUse > 0) {
+            // BMI'dan pozisyon hesapla
+            if (bmiValueToUse < 15) newPosition = 0;
+            else if (bmiValueToUse > 40) newPosition = 100;
+            else newPosition = Math.round((bmiValueToUse - 15) * 4);
+
+            // Kategori ve renk kontrolü
+            if (bmiValueToUse < 18.5) {
+              categoryToUse = "Zayif";
+              color = "#f1c40f"; // Sarı
+            } else if (bmiValueToUse < 25) {
+              categoryToUse = "Normal";
+              color = "#2ecc71"; // Yeşil
+            } else if (bmiValueToUse < 30) {
+              categoryToUse = "Fazla Kilolu";
+              color = "#e67e22"; // Turuncu
+            } else {
+              categoryToUse = "Obez";
+              color = "#e74c3c"; // Kırmızı
+            }
+            console.log(
+              "Manuel hesaplama sonucu: Pozisyon =",
+              newPosition,
+              "Renk =",
+              color,
+              "BMI =",
+              bmiValueToUse,
+              "Kategori =",
+              categoryToUse
+            );
+          } else if (oldBMI > 0) {
+            // Eğer mevcut BMI yoksa ama eski BMI değeri varsa, onu kullan
+            bmiValueToUse = oldBMI;
+            if (bmiValueToUse < 15) newPosition = 0;
+            else if (bmiValueToUse > 40) newPosition = 100;
+            else newPosition = Math.round((bmiValueToUse - 15) * 4);
+
+            // Kategori ve renk kontrolü
+            if (bmiValueToUse < 18.5) {
+              categoryToUse = "Zayif";
+              color = "#f1c40f"; // Sarı
+            } else if (bmiValueToUse < 25) {
+              categoryToUse = "Normal";
+              color = "#2ecc71"; // Yeşil
+            } else if (bmiValueToUse < 30) {
+              categoryToUse = "Fazla Kilolu";
+              color = "#e67e22"; // Turuncu
+            } else {
+              categoryToUse = "Obez";
+              color = "#e74c3c"; // Kırmızı
+            }
+          }
+        }
+
+        console.log(
+          "BMI animasyon: Yeni pozisyon =",
+          newPosition + "%",
+          "Renk =",
+          color,
+          "BMI =",
+          bmiValueToUse,
+          "Kategori =",
+          categoryToUse
+        );
+
+        // Değerleri direkt uygula - !important ile güçlendirilmiş stil
+        if (bmiProgressBar) {
+          bmiProgressBar.style.cssText =
+            "width: " +
+            newPosition +
+            "% !important; background-color: " +
+            color +
+            " !important; height: 100% !important; display: block !important; visibility: visible !important; transition: none !important;";
+
+          // Ayrıca setAttribute ile de uygula
+          bmiProgressBar.setAttribute(
+            "style",
+            "width: " +
+              newPosition +
+              "% !important; background-color: " +
+              color +
+              " !important; height: 100% !important; display: block !important; visibility: visible !important; transition: none !important;"
+          );
+
+          // jQuery ile de uygula
+          if (typeof jQuery !== "undefined") {
+            try {
+              jQuery(bmiProgressBar).css({
+                width: newPosition + "%",
+                "background-color": color,
+                height: "100%",
+                display: "block",
+                visibility: "visible",
+              });
+              console.log("jQuery ile stil uygulandı");
+            } catch (e) {
+              console.error("jQuery hatası:", e);
+            }
+          }
+        }
+
+        if (bmiIndicator) {
+          bmiIndicator.style.left = newPosition + "%";
+          bmiIndicator.style.borderColor = color;
+          bmiIndicator.setAttribute(
+            "data-value",
+            bmiValueToUse + " - " + categoryToUse
+          );
+        }
+
+        if (isUpdate && oldBMI !== newBMI && bmiValue && bmiCategory) {
+          // Değer değiştiğinde animasyon ekle
+          bmiValue.classList.add("animate");
+          bmiCategory.classList.add("animate");
+
+          setTimeout(function () {
+            bmiValue.classList.remove("animate");
+            bmiCategory.classList.remove("animate");
+          }, 1000);
+
+          // Pulse animasyonu
+          if (bmiIndicator) {
+            bmiIndicator.classList.add("pulse-animation");
+            setTimeout(function () {
+              bmiIndicator.classList.remove("pulse-animation");
+            }, 2000);
+          }
+        }
+
+        // Son bir kontrol
+        setTimeout(function () {
+          if (
+            bmiProgressBar &&
+            (bmiProgressBar.offsetWidth === 0 ||
+              parseFloat(bmiProgressBar.style.width) < 1)
+          ) {
+            console.warn(
+              "BMI cubugu genisligi hala cok dusuk, tekrar deneniyor"
+            );
+            bmiProgressBar.style.cssText =
+              "width: " +
+              newPosition +
+              "% !important; background-color: " +
+              color +
+              " !important; height: 100% !important; display: block !important; visibility: visible !important; transition: none !important;";
+
+            // jQuery ile de dene
+            if (typeof jQuery !== "undefined") {
+              try {
+                jQuery(bmiProgressBar).css({
+                  width: newPosition + "%",
+                  "background-color": color,
+                  height: "100%",
+                  display: "block",
+                  visibility: "visible",
+                });
+                console.log("jQuery ile stil uygulandı");
+              } catch (e) {
+                console.error("jQuery hatası:", e);
+              }
+            }
+          }
+        }, 100);
+      }
+
+      // BMI göstergesini güncelle
+      function updateBMIIndicator() {
+        // DOM elementlerini al
+        var indicator = document.getElementById("bmiIndicator");
+        var progressBar = document.getElementById("pnlProgressBar");
+
+        if (!indicator || !progressBar) {
+          console.error("BMI indicator veya progress bar bulunamadı");
+          return;
+        }
+
+        // Direkt stil uygula
+        progressBar.style.width = currentBMIPosition + "%";
+        progressBar.style.backgroundColor = currentBMIColor;
+        indicator.style.left = currentBMIPosition + "%";
+        indicator.style.borderColor = currentBMIColor;
+
+        console.log("BMI degerleri guncellendi: ", {
+          position: currentBMIPosition + "%",
+          color: currentBMIColor,
+          bmi: currentBMI,
+        });
+
+        // Tooltip değerini güncelle
+        indicator.setAttribute(
+          "data-value",
+          currentBMI + " - " + currentBMICategory
+        );
+      }
+
+      // BMI değerine göre skala üzerindeki pozisyonu hesapla (JavaScript versiyonu)
+      function calculatePositionOnScale(bmi) {
+        // BMI değerini 0-100 arasında bir pozisyona dönüştür
+        if (bmi < 15) return 0;
+        if (bmi > 40) return 100;
+
+        // 15-40 arası BMI değerlerini 0-100 arasına dönüştür
+        return Math.round((bmi - 15) * 4); // Her BMI birimi 4% ilerletir
+      }
     </script>
   </body>
 </html>

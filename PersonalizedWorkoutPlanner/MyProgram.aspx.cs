@@ -15,6 +15,8 @@ using System.Web.UI.HtmlControls;
 using System.Threading;
 using System.Web.Services;
 using System.Web.Script.Services;
+using System.Web.Script.Serialization;
+using System.Web.Security;
 
 namespace PersonalizedWorkoutPlanner
 {
@@ -67,72 +69,50 @@ namespace PersonalizedWorkoutPlanner
                         pnlNoProgram.Visible = false;
                         pnlPrograms.Visible = true;
 
-                        // Her gün için programları filtrele
-                        var pazartesiPrograms = dt.AsEnumerable()
-                            .Where(r => r.Field<string>("Days") != null && r.Field<string>("Days").Contains("Pazartesi"))
-                            .ToList();
-                        if (pazartesiPrograms.Any())
-                        {
-                            rptPazartesi.DataSource = pazartesiPrograms;
-                            rptPazartesi.DataBind();
-                        }
+                        // Her gün için programları filtreleme işlemi - kelime sınırlarını dikkate alan daha kesin filtreleme
+                        // Her gün için ayrı bir yardımcı metot kullanarak filtreleme yapalım
+                        rptPazartesi.DataSource = FilterProgramsByExactDay(dt, "Pazartesi");
+                        rptPazartesi.DataBind();
 
-                        var saliPrograms = dt.AsEnumerable()
-                            .Where(r => r.Field<string>("Days") != null && r.Field<string>("Days").Contains("Salı"))
-                            .ToList();
-                        if (saliPrograms.Any())
-                        {
-                            rptSali.DataSource = saliPrograms;
-                            rptSali.DataBind();
-                        }
+                        rptSali.DataSource = FilterProgramsByExactDay(dt, "Salı");
+                        rptSali.DataBind();
 
-                        var carsambaPrograms = dt.AsEnumerable()
-                            .Where(r => r.Field<string>("Days") != null && r.Field<string>("Days").Contains("Çarşamba"))
-                            .ToList();
-                        if (carsambaPrograms.Any())
-                        {
-                            rptCarsamba.DataSource = carsambaPrograms;
-                            rptCarsamba.DataBind();
-                        }
+                        rptCarsamba.DataSource = FilterProgramsByExactDay(dt, "Çarşamba");
+                        rptCarsamba.DataBind();
 
-                        var persembePrograms = dt.AsEnumerable()
-                            .Where(r => r.Field<string>("Days") != null && r.Field<string>("Days").Contains("Perşembe"))
-                            .ToList();
-                        if (persembePrograms.Any())
-                        {
-                            rptPersembe.DataSource = persembePrograms;
-                            rptPersembe.DataBind();
-                        }
+                        rptPersembe.DataSource = FilterProgramsByExactDay(dt, "Perşembe");
+                        rptPersembe.DataBind();
 
-                        var cumaPrograms = dt.AsEnumerable()
-                            .Where(r => r.Field<string>("Days") != null && r.Field<string>("Days").Contains("Cuma"))
-                            .ToList();
-                        if (cumaPrograms.Any())
-                        {
-                            rptCuma.DataSource = cumaPrograms;
-                            rptCuma.DataBind();
-                        }
+                        rptCuma.DataSource = FilterProgramsByExactDay(dt, "Cuma");
+                        rptCuma.DataBind();
 
-                        var cumartesiPrograms = dt.AsEnumerable()
-                            .Where(r => r.Field<string>("Days") != null && r.Field<string>("Days").Contains("Cumartesi"))
-                            .ToList();
-                        if (cumartesiPrograms.Any())
-                        {
-                            rptCumartesi.DataSource = cumartesiPrograms;
-                            rptCumartesi.DataBind();
-                        }
+                        rptCumartesi.DataSource = FilterProgramsByExactDay(dt, "Cumartesi");
+                        rptCumartesi.DataBind();
 
-                        var pazarPrograms = dt.AsEnumerable()
-                            .Where(r => r.Field<string>("Days") != null && r.Field<string>("Days").Contains("Pazar"))
-                            .ToList();
-                        if (pazarPrograms.Any())
-                        {
-                            rptPazar.DataSource = pazarPrograms;
-                            rptPazar.DataBind();
-                        }
+                        rptPazar.DataSource = FilterProgramsByExactDay(dt, "Pazar");
+                        rptPazar.DataBind();
                     }
                 }
             }
+        }
+
+        // Günlere göre tam eşleme yapan filtreleme metodu
+        private List<DataRow> FilterProgramsByExactDay(DataTable dt, string day)
+        {
+            return dt.AsEnumerable()
+                .Where(row =>
+                {
+                    string days = row.Field<string>("Days");
+                    if (string.IsNullOrEmpty(days)) return false;
+
+                    // Tam gün adı eşleşmesi için kontrol
+                    // Not: Cumartesi ile Cuma çakışmaması için kelime sınırlarını kontrol et
+                    return days.Equals(day, StringComparison.OrdinalIgnoreCase) ||
+                           days.StartsWith(day + ",", StringComparison.OrdinalIgnoreCase) ||
+                           days.EndsWith(", " + day, StringComparison.OrdinalIgnoreCase) ||
+                           days.IndexOf(", " + day + ",", StringComparison.OrdinalIgnoreCase) >= 0;
+                })
+                .ToList();
         }
 
         private void LoadStatistics()
@@ -475,30 +455,110 @@ namespace PersonalizedWorkoutPlanner
                 int programId = Convert.ToInt32(e.CommandArgument);
                 DeleteProgram(programId);
                 LoadPrograms();
+
+                // JavaScript ile sayfayı yeniden yükle
+                string refreshScript = "setTimeout(function() { window.location.reload(); }, 500);";
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "RefreshPage", refreshScript, true);
             }
         }
 
-        [System.Web.Services.WebMethod(EnableSession = true)]
-        [System.Web.Script.Services.ScriptMethod]
-        public static bool UpdateProgramDay(int id, string newDay)
+        protected void btnUpdateDay_Click(object sender, EventArgs e)
         {
-            // Kullanıcı oturumu kontrolü
-            if (System.Web.HttpContext.Current.Session["UserId"] == null)
-                return false;
-            int userId = Convert.ToInt32(System.Web.HttpContext.Current.Session["UserId"]);
-            string connectionString = System.Configuration.ConfigurationManager.ConnectionStrings["FitnessDBConnectionString"].ConnectionString;
-            using (SqlConnection conn = new SqlConnection(connectionString))
+            try
             {
-                string sql = "UPDATE Programs SET Days = @Days WHERE Id = @Id AND UserId = @UserId";
-                using (SqlCommand cmd = new SqlCommand(sql, conn))
+                if (Session["UserId"] == null)
                 {
-                    cmd.Parameters.AddWithValue("@Days", newDay);
-                    cmd.Parameters.AddWithValue("@Id", id);
-                    cmd.Parameters.AddWithValue("@UserId", userId);
-                    conn.Open();
-                    int result = cmd.ExecuteNonQuery();
-                    return result > 0;
+                    Response.Redirect("Login.aspx");
+                    return;
                 }
+
+                // Hidden field değerlerini al
+                int workoutId;
+                if (!int.TryParse(hdnWorkoutId.Value, out workoutId))
+                {
+                    // Hata oluştuğunda programa dön
+                    LoadPrograms();
+                    return;
+                }
+
+                string newDay = hdnNewDay.Value;
+                if (string.IsNullOrEmpty(newDay))
+                {
+                    // Hata oluştuğunda programa dön
+                    LoadPrograms();
+                    return;
+                }
+
+                int userId = Convert.ToInt32(Session["UserId"]);
+                System.Diagnostics.Debug.WriteLine($"Normal post ile güncelleme: userId={userId}, workoutId={workoutId}, newDay={newDay}");
+
+                // Güncelleme işlemi
+                UpdateWorkoutDay(userId, workoutId, newDay);
+
+                // Programları yeniden yükle
+                LoadPrograms();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"btnUpdateDay_Click hatası: {ex.Message}");
+                // Hataya rağmen programları yükle
+                LoadPrograms();
+            }
+        }
+
+        private void UpdateWorkoutDay(int userId, int workoutId, string newDay)
+        {
+            try
+            {
+                string conStr = ConfigurationManager.ConnectionStrings["FitnessDBConnectionString"].ConnectionString;
+                using (SqlConnection conn = new SqlConnection(conStr))
+                {
+                    conn.Open();
+
+                    // Önce mevcut günü alın
+                    string getOldDayQuery = "SELECT Days FROM Programs WHERE Id = @Id AND UserId = @UserId";
+                    SqlCommand getOldDayCmd = new SqlCommand(getOldDayQuery, conn);
+                    getOldDayCmd.Parameters.AddWithValue("@Id", workoutId);
+                    getOldDayCmd.Parameters.AddWithValue("@UserId", userId);
+
+                    string oldDay = getOldDayCmd.ExecuteScalar()?.ToString();
+
+                    // Eğer aynı günse işlem yapmaya gerek yok
+                    if (oldDay == newDay)
+                    {
+                        System.Diagnostics.Debug.WriteLine("Gün zaten aynı, değişiklik yapılmadı");
+                        return;
+                    }
+
+                    // Yeni gün ataması yap - eski günü tamamen kaldır ve yeni günü ekle
+                    // Bu şekilde "Cuma" yerine "Cumartesi" gibi kısmi eşleşme sorunlarını önleriz
+                    System.Diagnostics.Debug.WriteLine($"Eski gün: '{oldDay}', Yeni gün: '{newDay}'");
+
+                    // Günü değiştir
+                    string query = "UPDATE Programs SET Days = @Days WHERE Id = @Id AND UserId = @UserId";
+                    SqlCommand cmd = new SqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@Days", newDay);
+                    cmd.Parameters.AddWithValue("@Id", workoutId);
+                    cmd.Parameters.AddWithValue("@UserId", userId);
+
+                    int result = cmd.ExecuteNonQuery();
+                    System.Diagnostics.Debug.WriteLine($"UpdateWorkoutDay sonucu: {result} satır etkilendi");
+
+                    // Veritabanı güncellemesinden sonra sayfayı yeniden yükle
+                    if (result > 0)
+                    {
+                        string script = @"
+                        setTimeout(function() {
+                            window.location.href = window.location.href;
+                        }, 100);";
+                        ScriptManager.RegisterStartupScript(this, this.GetType(), "refresh", script, true);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"UpdateWorkoutDay hatası: {ex.Message}");
+                throw;
             }
         }
     }

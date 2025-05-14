@@ -13,6 +13,13 @@ namespace PersonalizedWorkoutPlanner
             var settings = new FriendlyUrlSettings();
             settings.AutoRedirectMode = RedirectMode.Permanent;
             routes.EnableFriendlyUrls(settings);
+
+            // Default sayfa yönlendirmesi
+            routes.MapPageRoute(
+                "DefaultPage",
+                "",
+                "~/Default.aspx"
+            );
         }
     }
 }

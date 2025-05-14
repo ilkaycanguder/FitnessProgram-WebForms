@@ -33,6 +33,33 @@ namespace PersonalizedWorkoutPlanner
         protected global::System.Web.UI.WebControls.Panel pnlNoProgram;
 
         /// <summary>
+        /// hdnWorkoutId control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hdnWorkoutId;
+
+        /// <summary>
+        /// hdnNewDay control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hdnNewDay;
+
+        /// <summary>
+        /// btnUpdateDay control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnUpdateDay;
+
+        /// <summary>
         /// pnlPrograms control.
         /// </summary>
         /// <remarks>

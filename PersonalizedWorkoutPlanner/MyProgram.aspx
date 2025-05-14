@@ -4,6 +4,7 @@ Inherits="PersonalizedWorkoutPlanner.MyProgram" %>
 
 <asp:Content ID="BodyContent" ContentPlaceHolderID="MainContent" runat="server">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <style>
     .program-container {
       margin-top: 2rem;
@@ -207,6 +208,11 @@ Inherits="PersonalizedWorkoutPlanner.MyProgram" %>
       <a href="Program.aspx" class="btn-create">Program Oluştur</a>
     </asp:Panel>
 
+    <!-- Görünmez form alanları -->
+    <asp:HiddenField ID="hdnWorkoutId" runat="server" />
+    <asp:HiddenField ID="hdnNewDay" runat="server" />
+    <asp:Button ID="btnUpdateDay" runat="server" CssClass="d-none" OnClick="btnUpdateDay_Click" Text="Güncelle" />
+
     <asp:Panel ID="pnlPrograms" runat="server">
       <div class="program-days-row">
         <!-- Pazartesi -->
@@ -248,7 +254,7 @@ Inherits="PersonalizedWorkoutPlanner.MyProgram" %>
                     CommandArgument='<%# ((System.Data.DataRow)Container.DataItem)["Id"] %>'
                     Text="&#128465;"
                     ToolTip="Sil"
-                    OnClientClick="return confirm('Bu hareketi silmek istediğinize emin misiniz?');"
+                    OnClientClick="return confirmDelete(this);"
                   />
                 </div>
                 <div class="program-days">
@@ -315,7 +321,7 @@ Inherits="PersonalizedWorkoutPlanner.MyProgram" %>
                     CommandArgument='<%# ((System.Data.DataRow)Container.DataItem)["Id"] %>'
                     Text="&#128465;"
                     ToolTip="Sil"
-                    OnClientClick="return confirm('Bu hareketi silmek istediğinize emin misiniz?');"
+                    OnClientClick="return confirmDelete(this);"
                   />
                 </div>
                 <div class="program-days">
@@ -382,7 +388,7 @@ Inherits="PersonalizedWorkoutPlanner.MyProgram" %>
                     CommandArgument='<%# ((System.Data.DataRow)Container.DataItem)["Id"] %>'
                     Text="&#128465;"
                     ToolTip="Sil"
-                    OnClientClick="return confirm('Bu hareketi silmek istediğinize emin misiniz?');"
+                    OnClientClick="return confirmDelete(this);"
                   />
                 </div>
                 <div class="program-days">
@@ -449,7 +455,7 @@ Inherits="PersonalizedWorkoutPlanner.MyProgram" %>
                     CommandArgument='<%# ((System.Data.DataRow)Container.DataItem)["Id"] %>'
                     Text="&#128465;"
                     ToolTip="Sil"
-                    OnClientClick="return confirm('Bu hareketi silmek istediğinize emin misiniz?');"
+                    OnClientClick="return confirmDelete(this);"
                   />
                 </div>
                 <div class="program-days">
@@ -516,7 +522,7 @@ Inherits="PersonalizedWorkoutPlanner.MyProgram" %>
                     CommandArgument='<%# ((System.Data.DataRow)Container.DataItem)["Id"] %>'
                     Text="&#128465;"
                     ToolTip="Sil"
-                    OnClientClick="return confirm('Bu hareketi silmek istediğinize emin misiniz?');"
+                    OnClientClick="return confirmDelete(this);"
                   />
                 </div>
                 <div class="program-days">
@@ -583,7 +589,7 @@ Inherits="PersonalizedWorkoutPlanner.MyProgram" %>
                     CommandArgument='<%# ((System.Data.DataRow)Container.DataItem)["Id"] %>'
                     Text="&#128465;"
                     ToolTip="Sil"
-                    OnClientClick="return confirm('Bu hareketi silmek istediğinize emin misiniz?');"
+                    OnClientClick="return confirmDelete(this);"
                   />
                 </div>
                 <div class="program-days">
@@ -650,7 +656,7 @@ Inherits="PersonalizedWorkoutPlanner.MyProgram" %>
                     CommandArgument='<%# ((System.Data.DataRow)Container.DataItem)["Id"] %>'
                     Text="&#128465;"
                     ToolTip="Sil"
-                    OnClientClick="return confirm('Bu hareketi silmek istediğinize emin misiniz?');"
+                    OnClientClick="return confirmDelete(this);"
                   />
                 </div>
                 <div class="program-days">
@@ -686,32 +692,78 @@ Inherits="PersonalizedWorkoutPlanner.MyProgram" %>
     let draggedId = null;
     let draggedDay = null;
 
+    // Sayfa yüklendiğinde çalışacak kod
+    $(document).ready(function() {
+      console.log("Sayfa yüklendi ve hazır");
+    });
+
     function onDragStart(e, el) {
       draggedId = el.getAttribute("data-id");
       draggedDay = el.getAttribute("data-day");
       e.dataTransfer.effectAllowed = "move";
     }
+    
     function onDragOver(e) {
       e.preventDefault();
       e.dataTransfer.dropEffect = "move";
     }
+    
     function onDrop(e, newDay) {
       e.preventDefault();
       if (draggedId && draggedDay !== newDay) {
-        // AJAX ile sunucuya isteği gönder
-        fetch("MyProgram.aspx/UpdateProgramDay", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: draggedId, newDay: newDay }),
-          credentials: "same-origin",
-        })
-          .then((r) => r.json())
-          .then((data) => {
-            if (data.d === true) location.reload();
-          });
+        console.log("Sürükleme başladı - ID: " + draggedId + ", Eski gün: " + draggedDay + ", Yeni gün: " + newDay);
+        
+        // Form değerlerini doldur ve gönder
+        try {
+          document.getElementById('<%= hdnWorkoutId.ClientID %>').value = draggedId;
+          document.getElementById('<%= hdnNewDay.ClientID %>').value = newDay;
+          console.log("Hidden field değerleri ayarlandı: ID=" + draggedId + ", NewDay=" + newDay);
+          
+          // Form gönderme düğmesine tıkla
+          document.getElementById('<%= btnUpdateDay.ClientID %>').click();
+          
+          // Sayfa güncellenmesini zorla (5 saniye içinde güncelleme olmazsa)
+          setTimeout(function() {
+            window.location.reload();
+          }, 5000);
+        } catch (e) {
+          console.error("Form gönderme hatası:", e);
+          alert("Egzersiz günü güncellenirken bir hata oluştu. Lütfen sayfayı yenileyip tekrar deneyin.");
+          // Hata durumunda da sayfayı yenile
+          window.location.reload();
+        }
       }
+      
       draggedId = null;
       draggedDay = null;
     }
+    
+    // Silme işleminin ardından sayfayı yenileme
+    function confirmDelete(button) {
+      if (confirm('Bu hareketi silmek istediğinize emin misiniz?')) {
+        // Silme işleminden sonra sayfayı yenile
+        setTimeout(function() {
+          window.location.reload();
+        }, 2000);
+        return true;
+      }
+      return false;
+    }
+    
+    // Tüm silme butonlarına click event listener ekle
+    $(document).ready(function() {
+      $('.btn-delete').each(function() {
+        const originalClick = this.onclick;
+        this.onclick = function(e) {
+          const result = originalClick ? originalClick.call(this, e) : true;
+          if (result !== false) {
+            setTimeout(function() {
+              window.location.reload();
+            }, 2000);
+          }
+          return result;
+        };
+      });
+    });
   </script>
 </asp:Content>

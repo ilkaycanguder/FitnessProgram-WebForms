@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text.Json;
 using System.IO;
 using System.Web.Script.Serialization;
+using System.Web;
 
 namespace PersonalizedWorkoutPlanner
 {
@@ -24,30 +25,73 @@ namespace PersonalizedWorkoutPlanner
         // Genişletilmiş program önerileri
         private Dictionary<string, List<string>> workoutPlans;
 
+        // Varsayılan egzersiz planları
+        private static readonly Dictionary<string, List<string>> DefaultWorkoutPlans;
+
+        // Static constructor
+        static Program()
+        {
+            DefaultWorkoutPlans = new Dictionary<string, List<string>>
+            {
+                { "Göğüs", new List<string> { "Bench Press", "Incline Dumbbell Press", "Push-up", "Dumbbell Fly", "Cable Crossover", "Chest Dip" } },
+                { "Bacak", new List<string> { "Squat", "Lunge", "Leg Press", "Leg Extension", "Hamstring Curl", "Calf Raise" } },
+                { "Sırt", new List<string> { "Deadlift", "Lat Pulldown", "Barbell Row", "Pull-up", "T-Bar Row" } },
+                { "Kardiyo", new List<string> { "HIIT", "Burpee" } },
+                { "Kol", new List<string> { "Preacher Curl" } },
+                { "Omuz", new List<string> { "Shoulder Press", "Reverse Fly", "Face Pull", "Upright Row", "Arnold Press" } }
+            };
+        }
+
         // JSON verilerini JavaScript'e aktarmak için property
         public string WorkoutPlansJson
         {
             get
             {
-                if (workoutPlans == null)
+                try
                 {
-                    LoadWorkoutPlans();
+                    if (workoutPlans == null)
+                    {
+                        LoadWorkoutPlans();
+                    }
+                    // JavaScriptSerializer kullanarak güvenli JSON üretimi
+                    var serializer = new JavaScriptSerializer();
+                    return serializer.Serialize(workoutPlans ?? DefaultWorkoutPlans);
                 }
-                // JavaScriptSerializer kullanarak güvenli JSON üretimi
-                var serializer = new JavaScriptSerializer();
-                return serializer.Serialize(workoutPlans);
+                catch
+                {
+                    // Hata durumunda varsayılan değerleri kullan
+                    var serializer = new JavaScriptSerializer();
+                    return serializer.Serialize(DefaultWorkoutPlans);
+                }
             }
         }
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (!IsPostBack)
+            try
             {
-                LoadWorkoutPlans();
-                if (Session["UserId"] == null)
+                if (!IsPostBack)
                 {
-                    Response.Redirect("Login.aspx");
+                    LoadWorkoutPlans();
+                    if (Session["UserId"] == null)
+                    {
+                        Response.Redirect("Login.aspx");
+                    }
                 }
+                else
+                {
+                    // PostBack durumunda da workoutPlans'ı yükle
+                    if (workoutPlans == null)
+                    {
+                        LoadWorkoutPlans();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Hata durumunda varsayılan değerleri kullan
+                workoutPlans = new Dictionary<string, List<string>>(DefaultWorkoutPlans);
+                System.Diagnostics.Debug.WriteLine("Page_Load hatası: " + ex.Message);
             }
         }
 
@@ -55,44 +99,97 @@ namespace PersonalizedWorkoutPlanner
         {
             try
             {
-                string jsonFilePath = Server.MapPath("~/App_Data/workoutPlans.json");
+                // Önce workoutPlans'ı varsayılan değerlerle başlat
+                workoutPlans = new Dictionary<string, List<string>>(DefaultWorkoutPlans);
+
+                // HttpContext.Current'i kontrol et
+                if (HttpContext.Current == null)
+                {
+                    System.Diagnostics.Debug.WriteLine("HttpContext.Current null");
+                    return; // Varsayılan değerleri kullanmaya devam et
+                }
+
+                // Server nesnesini kontrol et
+                if (HttpContext.Current.Server == null)
+                {
+                    System.Diagnostics.Debug.WriteLine("HttpContext.Current.Server null");
+                    return; // Varsayılan değerleri kullanmaya devam et
+                }
+
+                // App_Data klasörünün varlığını kontrol et
+                string appDataPath = null;
+                try
+                {
+                    appDataPath = HttpContext.Current.Server.MapPath("~/App_Data");
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine("Server.MapPath hatası: " + ex.Message);
+                    return; // Varsayılan değerleri kullanmaya devam et
+                }
+
+                if (string.IsNullOrEmpty(appDataPath))
+                {
+                    System.Diagnostics.Debug.WriteLine("App_Data yolu null veya boş");
+                    return; // Varsayılan değerleri kullanmaya devam et
+                }
+
+                if (!Directory.Exists(appDataPath))
+                {
+                    try
+                    {
+                        Directory.CreateDirectory(appDataPath);
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine("Klasör oluşturma hatası: " + ex.Message);
+                        return; // Varsayılan değerleri kullanmaya devam et
+                    }
+                }
+
+                string jsonFilePath = Path.Combine(appDataPath, "workoutPlans.json");
                 if (File.Exists(jsonFilePath))
                 {
-                    string jsonString = File.ReadAllText(jsonFilePath);
-                    var serializer = new JavaScriptSerializer();
-                    workoutPlans = serializer.Deserialize<Dictionary<string, List<string>>>(jsonString);
+                    try
+                    {
+                        string jsonString = File.ReadAllText(jsonFilePath);
+                        if (!string.IsNullOrEmpty(jsonString))
+                        {
+                            var serializer = new JavaScriptSerializer();
+                            var loadedPlans = serializer.Deserialize<Dictionary<string, List<string>>>(jsonString);
+                            if (loadedPlans != null && loadedPlans.Count > 0)
+                            {
+                                workoutPlans = loadedPlans;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine("JSON okuma hatası: " + ex.Message);
+                        // Varsayılan değerleri kullanmaya devam et
+                    }
                 }
                 else
                 {
-                    // Varsayılan veri yapısı
-                    workoutPlans = new Dictionary<string, List<string>>
+                    try
                     {
-                        { "Göğüs", new List<string> { "Bench Press", "Incline Dumbbell Press", "Push-up", "Dumbbell Fly", "Cable Crossover", "Chest Dip" } },
-                        { "Bacak", new List<string> { "Squat", "Lunge", "Leg Press", "Leg Extension", "Hamstring Curl", "Calf Raise" } },
-                        { "Sırt", new List<string> { "Deadlift", "Lat Pulldown", "Barbell Row", "Pull-up", "T-Bar Row" } },
-                        { "Kardiyo", new List<string> { "HIIT", "Burpee" } },
-                        { "Kol", new List<string> { "Preacher Curl" } },
-                        { "Omuz", new List<string> { "Shoulder Press", "Reverse Fly", "Face Pull", "Upright Row", "Arnold Press" } }
-                    };
-
-                    // JSON dosyasını oluştur
-                    var serializer = new JavaScriptSerializer();
-                    string defaultJson = serializer.Serialize(workoutPlans);
-                    File.WriteAllText(jsonFilePath, defaultJson);
+                        // JSON dosyası yoksa varsayılan değerleri kaydet
+                        var serializer = new JavaScriptSerializer();
+                        string defaultJson = serializer.Serialize(DefaultWorkoutPlans);
+                        File.WriteAllText(jsonFilePath, defaultJson);
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine("JSON dosyası yazma hatası: " + ex.Message);
+                        // Varsayılan değerleri kullanmaya devam et
+                    }
                 }
             }
             catch (Exception ex)
             {
-                // Hata durumunda varsayılan veri yapısını kullan
-                workoutPlans = new Dictionary<string, List<string>>
-                {
-                    { "Göğüs", new List<string> { "Bench Press", "Incline Dumbbell Press", "Push-up", "Dumbbell Fly", "Cable Crossover", "Chest Dip" } },
-                    { "Bacak", new List<string> { "Squat", "Lunge", "Leg Press", "Leg Extension", "Hamstring Curl", "Calf Raise" } },
-                    { "Sırt", new List<string> { "Deadlift", "Lat Pulldown", "Barbell Row", "Pull-up", "T-Bar Row" } },
-                    { "Kardiyo", new List<string> { "HIIT", "Burpee" } },
-                    { "Kol", new List<string> { "Preacher Curl" } },
-                    { "Omuz", new List<string> { "Shoulder Press", "Reverse Fly", "Face Pull", "Upright Row", "Arnold Press" } }
-                };
+                // Hata durumunda varsayılan değerleri kullan
+                workoutPlans = new Dictionary<string, List<string>>(DefaultWorkoutPlans);
+                System.Diagnostics.Debug.WriteLine("LoadWorkoutPlans genel hata: " + ex.Message);
             }
         }
 
