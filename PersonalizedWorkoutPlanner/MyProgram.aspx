@@ -179,7 +179,7 @@ Inherits="PersonalizedWorkoutPlanner.MyProgram" %>
     }
 
     .btn-print {
-      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+      background: linear-gradient(135deg, #2E7D32 0%, #43A047 100%);
       color: white;
       border: none;
       border-radius: 8px;
@@ -191,17 +191,51 @@ Inherits="PersonalizedWorkoutPlanner.MyProgram" %>
       align-items: center;
       justify-content: center;
       gap: 8px;
-      margin: 0 auto 10px auto;
-      box-shadow: 0 4px 10px rgba(30, 60, 114, 0.2);
+      margin: 0 auto 20px auto;
+      box-shadow: 0 4px 10px rgba(46, 125, 50, 0.2);
     }
     
     .btn-print:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 15px rgba(30, 60, 114, 0.3);
+      box-shadow: 0 8px 15px rgba(46, 125, 50, 0.3);
     }
     
     .btn-print i {
       font-size: 1.1rem;
+    }
+    
+    .btn-print:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    .loading-spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255,255,255,.3);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 1s ease-in-out infinite;
+      margin-right: 8px;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    #captureResult {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 10px 15px;
+      background-color: #4CAF50;
+      color: white;
+      border-radius: 4px;
+      z-index: 9999;
+      display: none;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
     }
     
     .btn-group {
@@ -300,15 +334,10 @@ Inherits="PersonalizedWorkoutPlanner.MyProgram" %>
     <asp:Button ID="btnUpdateDay" runat="server" CssClass="d-none" OnClick="btnUpdateDay_Click" Text="Güncelle" />
 
     <asp:Panel ID="pnlPrograms" runat="server">
-      <div class="btn-group">
-        <button type="button" id="btnImageDownload" class="btn-print btn-image">
-          <i class="fas fa-image"></i> Programı Resim Olarak İndir
-        </button>
-        
-        <button type="button" id="btnDownloadPDF" class="btn-print">
-          <i class="fas fa-file-pdf"></i> Programı PDF Olarak İndir
-        </button>
-      </div>
+      <div id="captureResult"></div>
+      <button type="button" id="btnImageDownload" class="btn-print">
+        <i class="fas fa-image"></i> Programı Resim Olarak İndir
+      </button>
       
       <div id="programContent" class="program-days-row">
         <!-- Pazartesi -->
@@ -792,14 +821,9 @@ Inherits="PersonalizedWorkoutPlanner.MyProgram" %>
     $(document).ready(function() {
       console.log("Sayfa yüklendi ve hazır");
       
-      // PDF İndirme butonu
-      $("#btnDownloadPDF").click(function() {
-        generatePDF();
-      });
-      
       // Resim İndirme butonu
       $("#btnImageDownload").click(function() {
-        generateImage();
+        captureAndDownload();
       });
     });
 
@@ -872,78 +896,105 @@ Inherits="PersonalizedWorkoutPlanner.MyProgram" %>
       });
     });
 
-    // PDF Oluşturma ve İndirme Fonksiyonu
-    function generatePDF() {
-      // Navbar ve diğer yazdırılmayacak elementleri geçici olarak gizle
-      $(".navbar, .footer, .btn-print, .btn-delete").addClass("no-print");
-      
-      // PDF ayarları
-      const element = document.getElementById('programContent');
-      const opt = {
-        margin: [5, 5, 5, 5],
-        filename: 'antrenman-programim.pdf',
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, logging: false, letterRendering: true },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
-      };
-      
-      // PDF oluşturma önce kullanıcıya bilgi ver
-      $("#btnDownloadPDF").text("PDF Hazırlanıyor...").prop('disabled', true);
-      
-      // PDF oluştur ve indir
-      html2pdf().set(opt).from(element).save().then(function() {
-        // İşlem tamamlandıktan sonra gizlenen elementleri göster
-        setTimeout(function() {
-          $(".navbar, .footer, .btn-print, .btn-delete").removeClass("no-print");
-          $("#btnDownloadPDF").html('<i class="fas fa-file-pdf"></i> Programı PDF Olarak İndir').prop('disabled', false);
-        }, 1000);
-      });
-    }
-
     // Resim oluşturma ve indirme fonksiyonu
-    function generateImage() {
+    function captureAndDownload() {
       // Kullanıcıya işlem yapıldığını bildir
-      $("#btnImageDownload").text("Resim Hazırlanıyor...").prop('disabled', true);
+      const btn = $("#btnImageDownload");
+      btn.html('<span class="loading-spinner"></span> Resim Hazırlanıyor...').prop('disabled', true);
       
-      // Navbar ve diğer yazdırılmayacak elementleri geçici olarak gizle
-      $(".navbar, .footer, .btn-print, .btn-delete, .btn-group").addClass("no-print");
+      // Hata gösterge elementi
+      const resultElement = $("#captureResult");
       
-      // Tüm içeriğin görünür olduğundan emin ol
-      $("#programContent").css({
-        "width": "100%",
-        "display": "flex",
-        "flex-wrap": "wrap",
-        "justify-content": "center"
-      });
-      
-      // Sayfanın programContent kısmını canvas'a dönüştür
-      html2canvas(document.getElementById("programContent"), {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        letterRendering: true,
-        allowTaint: true,
-        backgroundColor: "#ffffff"
-      }).then(function(canvas) {
-        // Canvas'ı resme dönüştür
-        var imgData = canvas.toDataURL('image/png');
+      try {
+        // Navbar ve diğer yazdırılmayacak elementleri geçici olarak gizle
+        $(".navbar, .footer, .btn-print, .btn-delete").hide();
         
-        // Resmi indirmek için link oluştur
-        var link = document.createElement('a');
-        link.download = 'antrenman-programim.png';
-        link.href = imgData;
+        // Tüm içeriğin görünür olduğundan emin ol
+        const content = document.getElementById("programContent");
         
-        // Link'i tıkla ve indir
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        // Görünür içeriğin orijinal boyutunu kaydet
+        const originalHeight = $(content).height();
         
-        // Sayfayı normal haline getir
+        // Boşluk eklenerek tüm içeriğin görünür olmasını sağla
+        $(content).css({
+          "width": "100%",
+          "display": "flex",
+          "flex-wrap": "wrap",
+          "justify-content": "center",
+          "background-color": "#ffffff",
+          "padding": "20px",
+          "border-radius": "8px",
+          "margin-bottom": "50px"
+        });
+        
+        // Sayfanın programContent kısmını canvas'a dönüştür
         setTimeout(function() {
-          $(".navbar, .footer, .btn-print, .btn-delete, .btn-group").removeClass("no-print");
-          $("#btnImageDownload").html('<i class="fas fa-image"></i> Programı Resim Olarak İndir').prop('disabled', false);
-        }, 1000);
-      });
+          html2canvas(content, {
+            scale: 1.5,           // Daha düşük ölçek, daha hızlı işlem
+            useCORS: true,        // Resim kaynaklarının yüklenmesine izin ver
+            allowTaint: true,     // Tainted canvas'a izin ver
+            backgroundColor: "#ffffff", // Arkaplan beyaz olsun
+            logging: true,        // Hata ayıklama için
+            letterRendering: true,
+            onrendered: function(canvas) {
+              console.log("Canvas rendered");
+            }
+          }).then(function(canvas) {
+            console.log("Canvas created successfully");
+            
+            // Canvas'ı resme dönüştür
+            try {
+              const imgData = canvas.toDataURL('image/png');
+              
+              // Resmi indirmek için link oluştur
+              const link = document.createElement('a');
+              link.download = 'antrenman-programim.png';
+              link.href = imgData;
+              
+              // Link'i tıkla ve indir
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+              
+              // Başarı mesajı göster
+              resultElement.text("Program resmi başarıyla indirildi!").css("background-color", "#4CAF50").fadeIn().delay(3000).fadeOut();
+              
+              console.log("Image downloaded successfully");
+            } catch (error) {
+              console.error("Error converting canvas to image: ", error);
+              resultElement.text("Resim oluşturulurken hata: " + error.message).css("background-color", "#F44336").fadeIn().delay(3000).fadeOut();
+            }
+            
+            // Sayfayı normal haline getir
+            $(".navbar, .footer, .btn-print, .btn-delete").show();
+            btn.html('<i class="fas fa-image"></i> Programı Resim Olarak İndir').prop('disabled', false);
+            
+            // İçeriği orijinal durumuna getir
+            $(content).css({
+              "height": "",
+              "padding": "",
+              "margin-bottom": "",
+              "background-color": ""
+            });
+            
+          }).catch(function(error) {
+            console.error("Error creating canvas: ", error);
+            resultElement.text("Canvas oluşturulurken hata: " + error.message).css("background-color", "#F44336").fadeIn().delay(3000).fadeOut();
+            
+            // Hata durumunda sayfayı normal haline getir
+            $(".navbar, .footer, .btn-print, .btn-delete").show();
+            btn.html('<i class="fas fa-image"></i> Programı Resim Olarak İndir').prop('disabled', false);
+          });
+        }, 500); // Görsel değişikliklerin uygulanması için bekle
+        
+      } catch (error) {
+        console.error("General error in capture function: ", error);
+        resultElement.text("Beklenmeyen hata: " + error.message).css("background-color", "#F44336").fadeIn().delay(3000).fadeOut();
+        
+        // Hata durumunda sayfayı normal haline getir
+        $(".navbar, .footer, .btn-print, .btn-delete").show();
+        btn.html('<i class="fas fa-image"></i> Programı Resim Olarak İndir').prop('disabled', false);
+      }
     }
   </script>
 </asp:Content>
