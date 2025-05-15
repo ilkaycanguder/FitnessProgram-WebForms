@@ -836,16 +836,9 @@ Inherits="PersonalizedWorkoutPlanner.MyProgram" %>
           
           // Form gönderme düğmesine tıkla
           document.getElementById('<%= btnUpdateDay.ClientID %>').click();
-          
-          // Sayfa güncellenmesini zorla (5 saniye içinde güncelleme olmazsa)
-          setTimeout(function() {
-            window.location.reload();
-          }, 5000);
         } catch (e) {
           console.error("Form gönderme hatası:", e);
           alert("Egzersiz günü güncellenirken bir hata oluştu. Lütfen sayfayı yenileyip tekrar deneyin.");
-          // Hata durumunda da sayfayı yenile
-          window.location.reload();
         }
       }
       
@@ -856,10 +849,7 @@ Inherits="PersonalizedWorkoutPlanner.MyProgram" %>
     // Silme işleminin ardından sayfayı yenileme
     function confirmDelete(button) {
       if (confirm('Bu hareketi silmek istediğinize emin misiniz?')) {
-        // Silme işleminden sonra sayfayı yenile
-        setTimeout(function() {
-          window.location.reload();
-        }, 2000);
+        // Silme işleminden sonra sayfayı yenileme kodunu kaldırıyoruz
         return true;
       }
       return false;
@@ -870,20 +860,9 @@ Inherits="PersonalizedWorkoutPlanner.MyProgram" %>
       return confirm('DİKKAT: Tüm antrenman programlarınız silinecek. Bu işlem geri alınamaz! Devam etmek istediğinize emin misiniz?');
     }
     
-    // Tüm silme butonlarına click event listener ekle
+    // Tüm silme butonlarına click event listener ekle - bu kodu da kaldırıyoruz
     $(document).ready(function() {
-      $('.btn-delete').each(function() {
-        const originalClick = this.onclick;
-        this.onclick = function(e) {
-          const result = originalClick ? originalClick.call(this, e) : true;
-          if (result !== false) {
-            setTimeout(function() {
-              window.location.reload();
-            }, 2000);
-          }
-          return result;
-        };
-      });
+      // Silme butonlarına ekstra yenileme eklemeyi kaldırıyoruz
     });
   </script>
 </asp:Content>

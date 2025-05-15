@@ -795,7 +795,7 @@ Inherits="PersonalizedWorkoutPlanner.Program" EnableEventValidation="false" %>
           <div class="muscle-group-cards">
             <div class="muscle-card" data-value="Göğüs">
               <img
-                src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?q=80&w=1170&auto=format&fit=crop"
+                src="https://media.post.rvohealth.io/wp-content/uploads/2019/05/Male_Chest_Press_732x549-thumbnail.jpg"
                 alt="Göğüs Antrenmanı"
               />
               <h5>Göğüs</h5>
@@ -809,7 +809,7 @@ Inherits="PersonalizedWorkoutPlanner.Program" EnableEventValidation="false" %>
             </div>
             <div class="muscle-card" data-value="Sırt">
               <img
-                src="https://images.unsplash.com/photo-1599058917765-a780eda07a3e?q=80&w=1169&auto=format&fit=crop"
+                src="https://bellsofsteel.com/cdn/shop/articles/performing-the-lat-pulldown.webp?v=1708539688&width=1024"
                 alt="Sırt Antrenmanı"
               />
               <h5>Sırt</h5>
@@ -830,7 +830,7 @@ Inherits="PersonalizedWorkoutPlanner.Program" EnableEventValidation="false" %>
             </div>
             <div class="muscle-card" data-value="Omuz">
               <img
-                src="https://cdn.pixabay.com/photo/2014/11/17/13/17/crossfit-534615_1280.jpg"
+                src="https://intowellness.in/wp-content/uploads/2024/10/Sunit_Jadhav_Shoulder_Press.jpg"
                 alt="Omuz Antrenmanı"
               />
               <h5>Omuz</h5>

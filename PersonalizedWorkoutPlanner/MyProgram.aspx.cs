@@ -33,7 +33,7 @@ namespace PersonalizedWorkoutPlanner
                 }
 
                 LoadPrograms();
-                
+
                 // IsPostBack false ise, yani sayfa ilk defa yükleniyorsa
                 // Alert mesajlarının tekrarlamasını engellemek için bir script ekle
                 string script = @"
@@ -301,7 +301,7 @@ namespace PersonalizedWorkoutPlanner
                 // Veritabanından tüm programları al
                 Dictionary<string, List<ProgramData>> programsByDay = new Dictionary<string, List<ProgramData>>();
                 string[] weekDays = { "Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar" };
-                
+
                 // Her gün için boş bir liste oluştur
                 foreach (string day in weekDays)
                 {
@@ -330,7 +330,7 @@ namespace PersonalizedWorkoutPlanner
                             string workoutName = reader["WorkoutName"].ToString();
 
                             // Koşu Bandı yazım hatasını düzelt
-                            if (workoutName.Equals("Koşu Bandı", StringComparison.OrdinalIgnoreCase) || 
+                            if (workoutName.Equals("Koşu Bandı", StringComparison.OrdinalIgnoreCase) ||
                                 workoutName.Equals("Kou Band", StringComparison.OrdinalIgnoreCase) ||
                                 workoutName.Contains("Kosu Band"))
                             {
@@ -342,7 +342,7 @@ namespace PersonalizedWorkoutPlanner
                             {
                                 workoutName = "Ip Atlama";
                             }
-                            
+
                             // Diğer Türkçe karakter düzeltmeleri
                             workoutName = workoutName.Replace("ğ", "g")
                                                     .Replace("ü", "u")
@@ -356,8 +356,8 @@ namespace PersonalizedWorkoutPlanner
                                                     .Replace("İ", "I")
                                                     .Replace("Ö", "O")
                                                     .Replace("Ç", "C");
-                                                    
-                            if (muscleGroup.Contains("ğ") || muscleGroup.Contains("ö") || muscleGroup.Contains("ü") || 
+
+                            if (muscleGroup.Contains("ğ") || muscleGroup.Contains("ö") || muscleGroup.Contains("ü") ||
                                 muscleGroup.Contains("ç") || muscleGroup.Contains("ş") || muscleGroup.Contains("ı"))
                             {
                                 muscleGroup = muscleGroup.Replace("ğ", "g")
@@ -373,10 +373,10 @@ namespace PersonalizedWorkoutPlanner
                                                         .Replace("Ö", "O")
                                                         .Replace("Ç", "C");
                             }
-                            
+
                             int id = Convert.ToInt32(reader["Id"]);
                             DateTime dateCreated = Convert.ToDateTime(reader["DateCreated"]);
-                            
+
                             // Her bir program için, o günle eşleşiyorsa listeye ekle
                             foreach (string day in weekDays)
                             {
@@ -462,17 +462,17 @@ namespace PersonalizedWorkoutPlanner
                     for (int i = 0; i < maxProgramCount; i++)
                     {
                         foreach (string day in weekDays)
-                    {
+                        {
                             PdfPCell dayCell;
-                            
+
                             if (i < programsByDay[day].Count)
                             {
                                 var program = programsByDay[day][i];
-                                
+
                                 // İç içe bir tablo oluştur (her program için)
                                 PdfPTable programTable = new PdfPTable(1);
                                 programTable.WidthPercentage = 100;
-                                
+
                                 // Egzersiz adı
                                 PdfPCell nameCell = new PdfPCell(new Phrase(program.WorkoutName, boldContentFont));
                                 nameCell.BorderWidth = 0;
@@ -480,14 +480,14 @@ namespace PersonalizedWorkoutPlanner
                                 nameCell.BackgroundColor = new BaseColor(240, 244, 248);
                                 nameCell.Padding = 5f;
                                 programTable.AddCell(nameCell);
-                                
+
                                 // Kas grubu
                                 PdfPCell muscleGroupCell = new PdfPCell(new Phrase("Kas Grubu: " + program.MuscleGroup, contentFont));
                                 muscleGroupCell.BorderWidth = 0;
                                 muscleGroupCell.PaddingLeft = 5f;
                                 muscleGroupCell.PaddingRight = 5f;
                                 programTable.AddCell(muscleGroupCell);
-                                
+
                                 // Ana hücre içine tablo yerleştir
                                 dayCell = new PdfPCell(programTable);
                                 dayCell.Padding = 5f;
@@ -497,7 +497,7 @@ namespace PersonalizedWorkoutPlanner
                                 // Boş hücre
                                 dayCell = new PdfPCell(new Phrase("", contentFont));
                             }
-                            
+
                             dayCell.BorderWidth = 0.5f;
                             dayCell.BorderColor = BaseColor.LIGHT_GRAY;
                             mainTable.AddCell(dayCell);
@@ -549,10 +549,6 @@ namespace PersonalizedWorkoutPlanner
                 int programId = Convert.ToInt32(e.CommandArgument);
                 DeleteProgram(programId);
                 LoadPrograms();
-
-                // JavaScript ile sayfayı yeniden yükle
-                string refreshScript = "setTimeout(function() { window.location.reload(); }, 500);";
-                ScriptManager.RegisterStartupScript(this, this.GetType(), "RefreshPage", refreshScript, true);
             }
         }
 
@@ -596,7 +592,7 @@ namespace PersonalizedWorkoutPlanner
                 // Genel hata mesajı göster
                 string errorScript = $"alert('Programlar silinirken bir hata oluştu: {ex.Message.Replace("'", "\\'")}');";
                 ScriptManager.RegisterStartupScript(this, this.GetType(), "DeleteAllError", errorScript, true);
-                
+
                 // Hata ayrıntılarını logla
                 System.Diagnostics.Debug.WriteLine($"Exception in DeleteAllPrograms_Click: {ex.Message}");
                 System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
@@ -616,7 +612,7 @@ namespace PersonalizedWorkoutPlanner
                 try
                 {
                     conn.Open();
-                    
+
                     // Use a transaction to ensure all deletions succeed or fail together
                     using (SqlTransaction transaction = conn.BeginTransaction())
                     {
@@ -629,10 +625,10 @@ namespace PersonalizedWorkoutPlanner
                             cmd.CommandTimeout = 120; // Increase timeout to 2 minutes
 
                             int rowsAffected = cmd.ExecuteNonQuery();
-                            
+
                             // Commit the transaction
                             transaction.Commit();
-                            
+
                             System.Diagnostics.Debug.WriteLine($"Kullanıcı (ID: {userId}) için {rowsAffected} program silindi.");
                         }
                         catch (Exception ex)
@@ -735,16 +731,6 @@ namespace PersonalizedWorkoutPlanner
 
                     int result = cmd.ExecuteNonQuery();
                     System.Diagnostics.Debug.WriteLine($"UpdateWorkoutDay sonucu: {result} satır etkilendi");
-
-                    // Veritabanı güncellemesinden sonra sayfayı yeniden yükle
-                    if (result > 0)
-                    {
-                        string script = @"
-                        setTimeout(function() {
-                            window.location.href = window.location.href;
-                        }, 100);";
-                        ScriptManager.RegisterStartupScript(this, this.GetType(), "refresh", script, true);
-                    }
                 }
             }
             catch (Exception ex)
